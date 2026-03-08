@@ -26,6 +26,9 @@ classifiers = [
 
 dependencies = []
 
+[project.scripts]
+wattweight = "wattweight.main:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
