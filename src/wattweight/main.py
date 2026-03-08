@@ -2,6 +2,19 @@
 
 import argparse
 import sys
+from importlib.metadata import version, PackageNotFoundError
+
+from wattweight.database import Database
+from wattweight.logger import get_logger, set_log_level, LogLevel
+from wattweight.cli import DeviceCommand, UpgradeCommand
+
+
+def get_version() -> str:
+    """Get the version from package metadata."""
+    try:
+        return version("wattweight")
+    except PackageNotFoundError:
+        return "dev"
 
 
 def main() -> int:
@@ -14,37 +27,61 @@ def main() -> int:
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s 0.1.0"
+        version=f"%(prog)s {get_version()}"
     )
     
     parser.add_argument(
         "-v", "--verbose",
-        action="store_true",
-        help="Enable verbose output"
+        action="count",
+        default=0,
+        help="Increase verbosity level (-v for INFO, -vv for DEBUG)"
     )
     
+    # Create subparsers before registering commands
     subparsers = parser.add_subparsers(
         dest="command",
         help="Available commands"
     )
     
-    # Add example subcommand
-    analyze_parser = subparsers.add_parser("analyze", help="Analyze energy data")
-    analyze_parser.add_argument("file", help="Data file to analyze")
+    # Create database instance for command registration
+    db = Database()
+    logger = get_logger()
+    
+    # Register all commands
+    device_cmd = DeviceCommand(db, logger)
+    device_cmd.register(subparsers)
+    
+    upgrade_cmd = UpgradeCommand(db, logger)
+    upgrade_cmd.register(subparsers)
     
     args = parser.parse_args()
     
-    if args.verbose:
-        print("Verbose mode enabled")
-    
-    if args.command == "analyze":
-        print(f"Analyzing file: {args.file}")
-        return 0
-    elif args.command is None:
+    # Configure logging based on verbosity
+    if args.verbose == 0:
+        set_log_level(LogLevel.WARNING)
+    elif args.verbose == 1:
+        set_log_level(LogLevel.INFO)
+    else:  # args.verbose >= 2
+        set_log_level(LogLevel.DEBUG)
+
+    if args.command is None:
         parser.print_help()
         return 0
     
-    return 0
+    # Initialize database with context manager
+    with Database() as db:
+        logger = get_logger()
+        
+        # Execute commands
+        if args.command == "device":
+            command = DeviceCommand(db, logger)
+            return command.execute(args)
+        elif args.command == "db":
+            command = UpgradeCommand(db, logger)
+            return command.execute(args)
+        else:
+            logger.error(f"Unknown command: {args.command}")
+            return 1
 
 
 if __name__ == "__main__":
