@@ -7,6 +7,7 @@ from typing import Optional
 
 class LogLevel(Enum):
     """Log level enumeration."""
+
     DEBUG = logging.DEBUG
     INFO = logging.INFO
     WARNING = logging.WARNING
@@ -19,11 +20,11 @@ class ColorFormatter(logging.Formatter):
 
     # ANSI color codes
     COLORS = {
-        logging.DEBUG: "\033[36m",      # Cyan
-        logging.INFO: "\033[32m",       # Green
-        logging.WARNING: "\033[33m",    # Yellow/Orange
-        logging.ERROR: "\033[31m",      # Red
-        logging.CRITICAL: "\033[35m",   # Magenta
+        logging.DEBUG: "\033[36m",  # Cyan
+        logging.INFO: "\033[32m",  # Green
+        logging.WARNING: "\033[33m",  # Yellow/Orange
+        logging.ERROR: "\033[31m",  # Red
+        logging.CRITICAL: "\033[35m",  # Magenta
     }
     RESET = "\033[0m"
 
@@ -31,12 +32,12 @@ class ColorFormatter(logging.Formatter):
         """Format log record with colors."""
         # Get the color for this log level
         color = self.COLORS.get(record.levelno, "")
-        
+
         # Format the message
         if color:
             # Colorize the level name
             record.levelname = f"{color}{record.levelname}{self.RESET}"
-        
+
         # Use the default formatting
         return super().format(record)
 
@@ -57,21 +58,21 @@ class Logger:
         """Initialize the logger."""
         if self._logger is None:
             self._logger = logging.getLogger("wattweight")
-            self._logger.setLevel(logging.DEBUG)  # Accept all messages, filter at handler level
-            
+            self._logger.setLevel(
+                logging.DEBUG
+            )  # Accept all messages, filter at handler level
+
             # Only add handler if not already present
             if not self._logger.handlers:
                 handler = logging.StreamHandler()
-                formatter = ColorFormatter(
-                    fmt="[%(levelname)s] %(message)s"
-                )
+                formatter = ColorFormatter(fmt="[%(levelname)s] %(message)s")
                 handler.setFormatter(formatter)
                 self._logger.addHandler(handler)
 
     @classmethod
     def set_level(cls, level: LogLevel) -> None:
         """Set the logging level.
-        
+
         Args:
             level: The LogLevel to set
         """

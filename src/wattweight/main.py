@@ -22,45 +22,40 @@ def get_version() -> str:
 def main() -> int:
     """Main entry point for the wattweight application."""
     parser = argparse.ArgumentParser(
-        description="Wattweight - Energy management tool",
-        prog="wattweight"
+        description="Wattweight - Energy management tool", prog="wattweight"
     )
-    
+
     parser.add_argument(
-        "--version",
-        action="version",
-        version=f"%(prog)s {get_version()}"
+        "--version", action="version", version=f"%(prog)s {get_version()}"
     )
-    
+
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="count",
         default=0,
-        help="Increase verbosity level (-v for INFO, -vv for DEBUG)"
+        help="Increase verbosity level (-v for INFO, -vv for DEBUG)",
     )
-    
+
     # Create subparsers before registering commands
-    subparsers = parser.add_subparsers(
-        dest="command",
-        help="Available commands"
-    )
-    
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
     # Create database instance for command registration
     db = Database()
     logger = get_logger()
-    
+
     # Register all commands
     device_cmd = DeviceCommand(db, logger)
     device_cmd.register(subparsers)
-    
+
     upgrade_cmd = UpgradeCommand(db, logger)
     upgrade_cmd.register(subparsers)
-    
+
     measurement_cmd = MeasurementCommand(db, logger)
     measurement_cmd.register(subparsers)
-    
+
     args = parser.parse_args()
-    
+
     # Configure logging based on verbosity
     if args.verbose == 0:
         set_log_level(LogLevel.WARNING)
@@ -72,15 +67,15 @@ def main() -> int:
     if args.command is None:
         parser.print_help()
         return 0
-    
+
     # Initialize database with context manager
     with Database() as db:
         logger = get_logger()
-        
+
         # Create a shared session for all managers
         session = db.get_session()
         BaseManager.set_session(session)
-        
+
         try:
             # Execute commands
             if args.command == "device":

@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from sqlmodel import select, Session
+from sqlmodel import select
 
 from wattweight.database import Database
 from wattweight.model import Device
@@ -11,11 +11,13 @@ from wattweight.core.base import BaseManager
 
 class DeviceNotFoundError(Exception):
     """Raised when a device is not found."""
+
     pass
 
 
 class DeviceAlreadyExistsError(Exception):
     """Raised when trying to create a device that already exists."""
+
     pass
 
 
@@ -108,7 +110,9 @@ class DeviceManager(BaseManager):
         ).first()
 
         if not device:
-            raise DeviceNotFoundError(f"Device with identifier '{identifier}' not found")
+            raise DeviceNotFoundError(
+                f"Device with identifier '{identifier}' not found"
+            )
 
         return device
 
@@ -136,10 +140,7 @@ class DeviceManager(BaseManager):
             DeviceNotFoundError: If device is not found
             ValueError: If no fields are provided to update
         """
-        if all(
-            v is None
-            for v in [name, description, idle_timeout, idle_power]
-        ):
+        if all(v is None for v in [name, description, idle_timeout, idle_power]):
             raise ValueError("At least one field must be provided to update")
 
         session = self._get_session()
@@ -148,7 +149,9 @@ class DeviceManager(BaseManager):
         ).first()
 
         if not device:
-            raise DeviceNotFoundError(f"Device with identifier '{identifier}' not found")
+            raise DeviceNotFoundError(
+                f"Device with identifier '{identifier}' not found"
+            )
 
         # Update fields
         if name is not None:
@@ -181,7 +184,9 @@ class DeviceManager(BaseManager):
         ).first()
 
         if not device:
-            raise DeviceNotFoundError(f"Device with identifier '{identifier}' not found")
+            raise DeviceNotFoundError(
+                f"Device with identifier '{identifier}' not found"
+            )
 
         session.delete(device)
         session.commit()

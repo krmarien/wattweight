@@ -48,7 +48,8 @@ class MigrationManager:
                 capture_output=True,
                 text=True,
             )
-            print([
+            print(
+                [
                     sys.executable,
                     "-m",
                     "alembic",
@@ -56,7 +57,8 @@ class MigrationManager:
                     str(self.alembic_ini),
                     "upgrade",
                     "head",
-                ])
+                ]
+            )
 
             if result.returncode != 0:
                 raise RuntimeError(f"Migration failed: {result.stdout}")
@@ -96,17 +98,21 @@ class MigrationManager:
                 capture_output=True,
                 text=True,
             )
-            print(" ".join([
-                    sys.executable,
-                    "-m",
-                    "alembic",
-                    "-c",
-                    str(self.alembic_ini),
-                    "revision",
-                    "--autogenerate",
-                    "-m",
-                    message,
-                ]))
+            print(
+                " ".join(
+                    [
+                        sys.executable,
+                        "-m",
+                        "alembic",
+                        "-c",
+                        str(self.alembic_ini),
+                        "revision",
+                        "--autogenerate",
+                        "-m",
+                        message,
+                    ]
+                )
+            )
 
             if result.returncode != 0:
                 raise RuntimeError(f"Migration creation failed: {result.stdout}")

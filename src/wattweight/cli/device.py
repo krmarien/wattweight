@@ -22,35 +22,28 @@ class DeviceCommand(BaseCommand):
         Args:
             subparsers: The subparsers action from ArgumentParser
         """
-        device_parser = subparsers.add_parser(
-            "device",
-            help="Manage devices"
-        )
+        device_parser = subparsers.add_parser("device", help="Manage devices")
 
         device_subparsers = device_parser.add_subparsers(
-            dest="device_action",
-            help="Device actions"
+            dest="device_action", help="Device actions"
         )
 
         # Add subcommand
         add_parser = device_subparsers.add_parser("add", help="Add a new device")
         add_parser.add_argument("identifier", help="Device identifier (unique)")
         add_parser.add_argument("name", help="Device name")
-        add_parser.add_argument(
-            "--description",
-            help="Device description"
-        )
+        add_parser.add_argument("--description", help="Device description")
         add_parser.add_argument(
             "--idle-timeout",
             type=int,
             default=20 * 60,
-            help="Idle timeout in seconds (default: 1200)"
+            help="Idle timeout in seconds (default: 1200)",
         )
         add_parser.add_argument(
             "--idle-power",
             type=float,
             default=2.0,
-            help="Idle power consumption in watts (default: 2.0)"
+            help="Idle power consumption in watts (default: 2.0)",
         )
 
         # List subcommand
@@ -62,14 +55,10 @@ class DeviceCommand(BaseCommand):
         modify_parser.add_argument("--name", help="New device name")
         modify_parser.add_argument("--description", help="New device description")
         modify_parser.add_argument(
-            "--idle-timeout",
-            type=int,
-            help="New idle timeout in seconds"
+            "--idle-timeout", type=int, help="New idle timeout in seconds"
         )
         modify_parser.add_argument(
-            "--idle-power",
-            type=float,
-            help="New idle power consumption in watts"
+            "--idle-power", type=float, help="New idle power consumption in watts"
         )
 
         # Remove subcommand
@@ -86,7 +75,9 @@ class DeviceCommand(BaseCommand):
             Exit code
         """
         if not hasattr(args, "device_action") or args.device_action is None:
-            self.logger.warning("No device action specified. Use 'wattweight device --help'")
+            self.logger.warning(
+                "No device action specified. Use 'wattweight device --help'"
+            )
             return 1
 
         manager = DeviceManager(self.db)
@@ -178,7 +169,15 @@ class DeviceCommand(BaseCommand):
                 return 0
 
             # Prepare table data
-            headers = ["ID", "Identifier", "Name", "Idle Timeout (s)", "Idle Power (W)", "State", "Measuring State"]
+            headers = [
+                "ID",
+                "Identifier",
+                "Name",
+                "Idle Timeout (s)",
+                "Idle Power (W)",
+                "State",
+                "Measuring State",
+            ]
             data = [
                 [
                     device.id,

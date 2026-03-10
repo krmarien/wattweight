@@ -41,7 +41,7 @@ class BaseManager:
 
     def __enter__(self):
         """Context manager entry - creates a shared session for batch operations.
-        
+
         Returns:
             The manager instance
         """
@@ -52,7 +52,10 @@ class BaseManager:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit - closes the session if this instance created it."""
-        if BaseManager._session_owner == self.__class__ and BaseManager._session is not None:
+        if (
+            BaseManager._session_owner == self.__class__
+            and BaseManager._session is not None
+        ):
             BaseManager._session.close()
             BaseManager._session = None
             BaseManager._session_owner = None

@@ -37,6 +37,7 @@ wattweight = "wattweight.main:main"
 dev = [
     "pytest>=7.0",
     "pytest-cov",
+    "pre-commit",
     "black>=23.0",
     "flake8>=6.0",
     "mypy>=1.0",

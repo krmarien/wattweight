@@ -49,7 +49,7 @@ def test_get_measurements(measurement_manager: MeasurementManager, device: Devic
     """Test getting all measurements for a device."""
     measurement_manager.add_measurement(value=100.0, device_id=device.id)
     measurement_manager.add_measurement(value=110.0, device_id=device.id)
-    
+
     measurements = measurement_manager.get_measurements(device)
     assert len(measurements) == 2
 

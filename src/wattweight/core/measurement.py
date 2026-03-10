@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlmodel import select, Session
+from sqlmodel import select
 
 from wattweight.database import Database
 from wattweight.model import Measurement
@@ -33,7 +33,8 @@ class MeasurementManager(BaseManager):
         Args:
             value: Measurement value
             device_id: ID of the device to which the measurement belongs
-            timestamp: Optional measurement timestamp in UTC. If None, uses current UTC time.
+            timestamp: Optional measurement timestamp in UTC. If None, uses current UTC
+                time.
 
         Returns:
             The created Measurement object
@@ -55,7 +56,7 @@ class MeasurementManager(BaseManager):
 
         return measurement
 
-    def get_measurements(self,  device: Device) -> List[Measurement]:
+    def get_measurements(self, device: Device) -> List[Measurement]:
         """Get all measurements for a device by its identifier.
 
         Args:
@@ -66,8 +67,10 @@ class MeasurementManager(BaseManager):
 
         Raises:
             DeviceNotFoundError: If device is not found
-        """        
+        """
         session = self._get_session()
-        
-        measurements = session.exec(select(Measurement).where(Measurement.device_id == device.id)).all()
+
+        measurements = session.exec(
+            select(Measurement).where(Measurement.device_id == device.id)
+        ).all()
         return measurements

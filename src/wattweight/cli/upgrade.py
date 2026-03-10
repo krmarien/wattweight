@@ -1,7 +1,6 @@
 """Database upgrade and migration CLI command."""
 
 import argparse
-from typing import Optional
 
 from wattweight.cli.base import BaseCommand
 from wattweight.core.migration import MigrationManager
@@ -17,30 +16,23 @@ class UpgradeCommand(BaseCommand):
             subparsers: The subparsers action from ArgumentParser
         """
         upgrade_parser = subparsers.add_parser(
-            "db",
-            help="Database management commands"
+            "db", help="Database management commands"
         )
 
         db_subparsers = upgrade_parser.add_subparsers(
-            dest="db_action",
-            help="Database actions"
+            dest="db_action", help="Database actions"
         )
 
         # Upgrade subcommand
         db_subparsers.add_parser(
-            "upgrade",
-            help="Upgrade the database to the latest version"
+            "upgrade", help="Upgrade the database to the latest version"
         )
 
         # Create migration subcommand
         migrate_parser = db_subparsers.add_parser(
-            "migrate",
-            help="Create a new database migration"
+            "migrate", help="Create a new database migration"
         )
-        migrate_parser.add_argument(
-            "message",
-            help="Migration description"
-        )
+        migrate_parser.add_argument("message", help="Migration description")
 
     def execute(self, args: argparse.Namespace) -> int:
         """Execute the database command.
@@ -52,7 +44,9 @@ class UpgradeCommand(BaseCommand):
             Exit code
         """
         if not hasattr(args, "db_action") or args.db_action is None:
-            self.logger.warning("No database action specified. Use 'wattweight db --help'")
+            self.logger.warning(
+                "No database action specified. Use 'wattweight db --help'"
+            )
             return 1
 
         if args.db_action == "upgrade":
