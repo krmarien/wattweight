@@ -5,11 +5,13 @@ from wattweight.core.device import (
     DeviceNotFoundError,
     DeviceAlreadyExistsError,
 )
+from wattweight.core.measurement import MeasurementManager
 from wattweight.core.migration import MigrationManager
 
 __all__ = [
     "DeviceManager",
     "DeviceNotFoundError",
     "DeviceAlreadyExistsError",
+    "MeasurementManager",
     "MigrationManager",
 ]

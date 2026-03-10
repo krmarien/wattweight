@@ -1,6 +1,9 @@
-from typing import Optional
-from sqlmodel import Field, SQLModel
+from typing import Optional, List, TYPE_CHECKING
+from sqlmodel import Field, SQLModel, Relationship
 from enum import Enum
+
+if TYPE_CHECKING:
+    from .measurement import Measurement # Only imported for type hints
 
 class DeviceState(str, Enum):
     UNKNOWN = "unknown"
@@ -21,3 +24,6 @@ class Device(SQLModel, table=True):
     idle_power: float = 2.0  # Power consumption when idle (in watts)
     state: DeviceState = DeviceState.UNKNOWN
     measuring_state: DeviceMeasuringState = DeviceMeasuringState.UNKNOWN
+
+    measurements: List["Measurement"] = Relationship(back_populates="device")
+

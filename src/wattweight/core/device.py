@@ -6,6 +6,7 @@ from sqlmodel import select, Session
 
 from wattweight.database import Database
 from wattweight.model import Device
+from wattweight.core.base import BaseManager
 
 
 class DeviceNotFoundError(Exception):
@@ -18,25 +19,16 @@ class DeviceAlreadyExistsError(Exception):
     pass
 
 
-class DeviceManager:
+class DeviceManager(BaseManager):
     """Manager for device operations."""
 
-    def __init__(self, db: Database, session: Optional[Session] = None):
+    def __init__(self, db: Database):
         """Initialize the device manager.
 
         Args:
             db: Database instance
-            session: Optional session to reuse (if None, creates new sessions per operation)
         """
-        self.db = db
-        self._session = session
-        self._owns_session = session is None
-
-    def _get_session(self) -> Session:
-        """Get the current session or create a new one."""
-        if self._session is not None:
-            return self._session
-        return self.db.get_session()
+        super().__init__(db)
 
     def add_device(
         self,

@@ -4,9 +4,11 @@ import argparse
 import sys
 from importlib.metadata import version, PackageNotFoundError
 
+from wattweight.cli.measurement import MeasurementCommand
 from wattweight.database import Database
 from wattweight.logger import get_logger, set_log_level, LogLevel
 from wattweight.cli import DeviceCommand, UpgradeCommand
+from wattweight.core.base import BaseManager
 
 
 def get_version() -> str:
@@ -54,6 +56,9 @@ def main() -> int:
     upgrade_cmd = UpgradeCommand(db, logger)
     upgrade_cmd.register(subparsers)
     
+    measurement_cmd = MeasurementCommand(db, logger)
+    measurement_cmd.register(subparsers)
+    
     args = parser.parse_args()
     
     # Configure logging based on verbosity
@@ -72,16 +77,28 @@ def main() -> int:
     with Database() as db:
         logger = get_logger()
         
-        # Execute commands
-        if args.command == "device":
-            command = DeviceCommand(db, logger)
-            return command.execute(args)
-        elif args.command == "db":
-            command = UpgradeCommand(db, logger)
-            return command.execute(args)
-        else:
-            logger.error(f"Unknown command: {args.command}")
-            return 1
+        # Create a shared session for all managers
+        session = db.get_session()
+        BaseManager.set_session(session)
+        
+        try:
+            # Execute commands
+            if args.command == "device":
+                command = DeviceCommand(db, logger)
+                return command.execute(args)
+            elif args.command == "db":
+                command = UpgradeCommand(db, logger)
+                return command.execute(args)
+            elif args.command == "measurement":
+                command = MeasurementCommand(db, logger)
+                return command.execute(args)
+            else:
+                logger.error(f"Unknown command: {args.command}")
+                return 1
+        finally:
+            # Clean up: reset the shared session
+            session.close()
+            BaseManager.set_session(None)
 
 
 if __name__ == "__main__":
