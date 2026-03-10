@@ -185,15 +185,3 @@ class DeviceManager(BaseManager):
 
         session.delete(device)
         session.commit()
-
-    def __enter__(self) -> "DeviceManager":
-        """Context manager entry - creates a shared session for batch operations."""
-        if self._owns_session:
-            self._session = self.db.get_session()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        """Context manager exit - closes the session if we own it."""
-        if self._owns_session and self._session:
-            self._session.close()
-            self._session = None

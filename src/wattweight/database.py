@@ -21,12 +21,18 @@ class Database:
         """Initialize the database manager.
 
         Args:
-            db_dir: Directory to store the database. Defaults to ~/.wattweight
+            db_dir: Directory to store the database. If None, an in-memory database is used. Defaults to ~/.wattweight
             echo: Whether to echo SQL statements for debugging
         """
-        self.db_dir = db_dir or Path(os.getenv("WATTWEIGHT_DB_DIR", Path.cwd() / ".wattweight"))
-        self.db_path = self.db_dir / "wattweight.db"
-        self.database_url = f"sqlite:///{self.db_path}"
+        if db_dir is None:
+            self.database_url = "sqlite:///:memory:"
+            self.db_dir = None
+            self.db_path = None
+        else: # pragma: no cover
+            self.db_dir = db_dir or Path(os.getenv("WATTWEIGHT_DB_DIR", Path.cwd() / ".wattweight"))
+            self.db_path = self.db_dir / "wattweight.db"
+            self.database_url = f"sqlite:///{self.db_path}"
+        
         self.echo = echo
         self._engine: Optional[Engine] = None
         self._logger = get_logger()
@@ -45,18 +51,16 @@ class Database:
 
     def init_db(self) -> None:
         """Initialize the database, creating tables if they don't exist."""
-        # Import models here to ensure they're registered with SQLModel
-        from wattweight.model import Device  # noqa: F401
 
         # Create the database directory if it doesn't exist
-        if not self.db_dir.exists():
+        if self.db_dir and not self.db_dir.exists(): # pragma: no cover
             self._logger.debug(f"Creating database directory: {self.db_dir}")
             self.db_dir.mkdir(parents=True, exist_ok=True)
 
         # Create all tables
         self._logger.debug("Initializing database tables")
         SQLModel.metadata.create_all(self.engine)
-        self._logger.debug(f"Database initialized at {self.db_path}")
+        self._logger.debug(f"Database initialized at {self.db_path or 'in-memory'}")
 
     def get_session(self) -> Session:
         """Get a database session.

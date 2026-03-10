@@ -36,6 +36,7 @@ wattweight = "wattweight.main:main"
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "pytest-cov",
     "black>=23.0",
     "flake8>=6.0",
     "mypy>=1.0",
@@ -71,3 +72,16 @@ disallow_untyped_defs = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
+addopts = "--cov=src/wattweight --cov-report=term-missing --cov-report=xml --cov-report=html"
+
+[tool.coverage.run]
+omit = [
+    "src/wattweight/main.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]
+

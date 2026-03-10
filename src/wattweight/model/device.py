@@ -2,7 +2,7 @@ from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship
 from enum import Enum
 
-if TYPE_CHECKING:
+if TYPE_CHECKING: # pragma: no cover
     from .measurement import Measurement # Only imported for type hints
 
 class DeviceState(str, Enum):
