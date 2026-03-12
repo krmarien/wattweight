@@ -8,7 +8,8 @@ class BaseManager:
     """Base manager class with static session management."""
 
     _session: Optional[Session] = None
-    _session_owner: Optional[type] = None  # Track which class created the session
+    _session_owner: Optional[type] = None
+    _session_depth: int = 0
 
     def __init__(self, db):
         """Initialize the manager.
@@ -48,14 +49,15 @@ class BaseManager:
         if BaseManager._session is None:
             BaseManager._session = self.db.get_session()
             BaseManager._session_owner = self.__class__
+        if BaseManager._session_owner == self.__class__:
+            BaseManager._session_depth += 1
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit - closes the session if this instance created it."""
-        if (
-            BaseManager._session_owner == self.__class__
-            and BaseManager._session is not None
-        ):
-            BaseManager._session.close()
-            BaseManager._session = None
-            BaseManager._session_owner = None
+        if BaseManager._session_owner == self.__class__:
+            BaseManager._session_depth -= 1
+            if BaseManager._session_depth == 0 and BaseManager._session is not None:
+                BaseManager._session.close()
+                BaseManager._session = None
+                BaseManager._session_owner = None
