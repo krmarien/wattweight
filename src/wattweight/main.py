@@ -1,6 +1,7 @@
 """Main module for wattweight."""
 
 import argparse
+from pathlib import Path
 import sys
 from importlib.metadata import version, PackageNotFoundError
 
@@ -40,19 +41,10 @@ def main() -> int:
     # Create subparsers before registering commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Create database instance for command registration
-    db = Database()
-    logger = get_logger()
-
     # Register all commands
-    device_cmd = DeviceCommand(db, logger)
-    device_cmd.register(subparsers)
-
-    upgrade_cmd = UpgradeCommand(db, logger)
-    upgrade_cmd.register(subparsers)
-
-    measurement_cmd = MeasurementCommand(db, logger)
-    measurement_cmd.register(subparsers)
+    DeviceCommand.register(subparsers)
+    UpgradeCommand.register(subparsers)
+    MeasurementCommand.register(subparsers)
 
     args = parser.parse_args()
 
@@ -69,7 +61,7 @@ def main() -> int:
         return 0
 
     # Initialize database with context manager
-    with Database() as db:
+    with Database(Path.cwd() / ".wattweight") as db:
         logger = get_logger()
 
         # Create a shared session for all managers
@@ -79,13 +71,13 @@ def main() -> int:
         try:
             # Execute commands
             if args.command == "device":
-                command = DeviceCommand(db, logger)
+                command = DeviceCommand(db)
                 return command.execute(args)
             elif args.command == "db":
-                command = UpgradeCommand(db, logger)
+                command = UpgradeCommand(db)
                 return command.execute(args)
             elif args.command == "measurement":
-                command = MeasurementCommand(db, logger)
+                command = MeasurementCommand(db)
                 return command.execute(args)
             else:
                 logger.error(f"Unknown command: {args.command}")

@@ -35,20 +35,30 @@ def device(device_manager: DeviceManager) -> Device:
     return device_manager.add_device(identifier="test-device", name="Test Device")
 
 
-def test_add_measurement(measurement_manager: MeasurementManager, device: Device):
+def test_add_measurement(
+    device_manager: DeviceManager,
+    measurement_manager: MeasurementManager,
+    device: Device,
+):
     """Test adding a new measurement."""
     measurement = measurement_manager.add_measurement(
         value=100.0,
-        device_id=device.id,
+        device=device,
     )
     assert measurement.value == 100.0
     assert measurement.device_id == device.id
+    assert device.measuring_state == device.measuring_state.MEASURING
+
+    assert (
+        device_manager.get_device_by_identifier(device.identifier).measuring_state
+        == device.measuring_state
+    )
 
 
 def test_get_measurements(measurement_manager: MeasurementManager, device: Device):
     """Test getting all measurements for a device."""
-    measurement_manager.add_measurement(value=100.0, device_id=device.id)
-    measurement_manager.add_measurement(value=110.0, device_id=device.id)
+    measurement_manager.add_measurement(value=100.0, device=device)
+    measurement_manager.add_measurement(value=110.0, device=device)
 
     measurements = measurement_manager.get_measurements(device)
     assert len(measurements) == 2

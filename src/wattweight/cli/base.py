@@ -3,29 +3,24 @@
 from abc import ABC, abstractmethod
 import argparse
 from wattweight.database import Database
-from wattweight.logger import Logger
+from wattweight.logger import Logger, get_logger
 
 
 class BaseCommand(ABC):
     """Base class for CLI commands."""
 
-    def __init__(self, db: Database, logger: Logger):
+    def __init__(self, db: Database):
         """Initialize the command.
 
         Args:
             db: Database instance
-            logger: Logger instance
         """
         self.db = db
-        self.logger = logger
 
-    @abstractmethod
-    def register(self, subparsers: argparse._SubParsersAction) -> None:
-        """Register command and subcommands with argparse.
-
-        Args:
-            subparsers: The subparsers action from ArgumentParser
-        """
+    @property
+    def logger(self) -> Logger:
+        """Get the logger instance."""
+        return get_logger()
 
     @abstractmethod
     def execute(self, args: argparse.Namespace) -> int:

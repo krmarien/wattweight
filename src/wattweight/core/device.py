@@ -80,6 +80,8 @@ class DeviceManager(BaseManager):
         session.commit()
         session.refresh(device)
 
+        self.logger.info(f"Device '{name}' (ID: {device.id}) created successfully")
+
         return device
 
     def get_all_devices(self) -> List[Device]:
@@ -167,6 +169,8 @@ class DeviceManager(BaseManager):
         session.commit()
         session.refresh(device)
 
+        self.logger.info(f"Device '{identifier}' updated successfully")
+
         return device
 
     def delete_device(self, identifier: str) -> None:
@@ -188,5 +192,10 @@ class DeviceManager(BaseManager):
                 f"Device with identifier '{identifier}' not found"
             )
 
+        for measurement in device.measurements:
+            session.delete(measurement)
+
         session.delete(device)
         session.commit()
+
+        self.logger.info(f"Device '{identifier}' removed successfully")

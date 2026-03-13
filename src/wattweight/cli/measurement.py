@@ -14,6 +14,7 @@ from wattweight.core.measurement import MeasurementManager
 class MeasurementCommand(BaseCommand):
     """Command for managing measurements."""
 
+    @classmethod
     def register(self, subparsers: argparse._SubParsersAction) -> None:
         """Register the measurement command and its subcommands.
 
@@ -113,10 +114,9 @@ class MeasurementCommand(BaseCommand):
 
             _ = manager.add_measurement(
                 value=value,
-                device_id=device.id,
+                device=device,
                 timestamp=timestamp,
             )
-            self.logger.info("Measurement added successfully")
             return 0
 
         except DeviceNotFoundError as e:

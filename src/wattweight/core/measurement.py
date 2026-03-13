@@ -5,9 +5,10 @@ from typing import List, Optional
 
 from sqlmodel import select
 
+from wattweight.core.device_state import DeviceStateService
 from wattweight.database import Database
 from wattweight.model import Measurement
-from wattweight.model.device import Device
+from wattweight.model.device import Device, DeviceMeasuringState
 from wattweight.core.base import BaseManager
 
 
@@ -25,7 +26,7 @@ class MeasurementManager(BaseManager):
     def add_measurement(
         self,
         value: float,
-        device_id: int,
+        device: Device,
         timestamp: Optional[datetime] = None,
     ) -> Measurement:
         """Add a new measurement.
@@ -44,15 +45,21 @@ class MeasurementManager(BaseManager):
         """
         session = self._get_session()
 
+        device.measuring_state = DeviceMeasuringState.MEASURING
+
         # Create and add measurement
         measurement = Measurement(
             value=value,
-            device_id=device_id,
+            device_id=device.id,
             timestamp=timestamp,
         )
         session.add(measurement)
         session.commit()
         session.refresh(measurement)
+
+        DeviceStateService.update_state(session.get(Device, device.id))
+
+        self.logger.info("Measurement added successfully")
 
         return measurement
 

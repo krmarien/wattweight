@@ -3,6 +3,8 @@
 from typing import Optional
 from sqlmodel import Session
 
+from wattweight.logger import get_logger
+
 
 class BaseManager:
     """Base manager class with static session management."""
@@ -18,6 +20,8 @@ class BaseManager:
             db: Database instance
         """
         self.db = db
+
+        self.logger = get_logger()
 
     @classmethod
     def set_session(cls, session: Optional[Session]) -> None:

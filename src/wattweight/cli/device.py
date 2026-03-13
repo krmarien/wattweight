@@ -16,6 +16,7 @@ from wattweight.core import (
 class DeviceCommand(BaseCommand):
     """Command for managing devices."""
 
+    @classmethod
     def register(self, subparsers: argparse._SubParsersAction) -> None:
         """Register the device command and its subcommands.
 
@@ -133,14 +134,13 @@ class DeviceCommand(BaseCommand):
         self.logger.debug(f"Adding device: {identifier} ({name})")
 
         try:
-            device = manager.add_device(
+            _ = manager.add_device(
                 identifier,
                 name,
                 description=description,
                 idle_timeout=idle_timeout,
                 idle_power=idle_power,
             )
-            self.logger.info(f"Device '{name}' (ID: {device.id}) created successfully")
             return 0
 
         except DeviceAlreadyExistsError as e:
@@ -233,7 +233,6 @@ class DeviceCommand(BaseCommand):
                 idle_timeout=idle_timeout,
                 idle_power=idle_power,
             )
-            self.logger.info(f"Device '{identifier}' updated successfully")
             return 0
 
         except DeviceNotFoundError as e:
@@ -260,7 +259,6 @@ class DeviceCommand(BaseCommand):
 
         try:
             manager.delete_device(identifier)
-            self.logger.info(f"Device '{identifier}' removed successfully")
             return 0
 
         except DeviceNotFoundError as e:

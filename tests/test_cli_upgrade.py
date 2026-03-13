@@ -28,39 +28,44 @@ def logger() -> Logger:
 @pytest.fixture
 def upgrade_command(db: Database, logger: Logger) -> UpgradeCommand:
     """Fixture for the UpgradeCommand."""
-    return UpgradeCommand(db, logger)
+    with patch("wattweight.cli.base.get_logger", return_value=logger):
+        return UpgradeCommand(db)
 
 
-def test_register(upgrade_command: UpgradeCommand):
+def test_register():
     """Test the register method."""
     subparsers = MagicMock()
-    upgrade_command.register(subparsers)
+    UpgradeCommand.register(subparsers)
     subparsers.add_parser.assert_called_with("db", help="Database management commands")
 
 
 def test_execute_no_action(upgrade_command: UpgradeCommand, logger: Logger):
     """Test execute with no action."""
-    args = argparse.Namespace()
-    result = upgrade_command.execute(args)
-    assert result == 1
-    logger.warning.assert_called_with(
-        "No database action specified. Use 'wattweight db --help'"
-    )
+    with patch("wattweight.cli.base.get_logger", return_value=logger):
+        args = argparse.Namespace()
+        result = upgrade_command.execute(args)
+        assert result == 1
+        logger.warning.assert_called_with(
+            "No database action specified. Use 'wattweight db --help'"
+        )
 
 
 def test_execute_unknown_action(upgrade_command: UpgradeCommand, logger: Logger):
     """Test execute with an unknown action."""
-    args = argparse.Namespace(db_action="unknown")
-    result = upgrade_command.execute(args)
-    assert result == 1
-    logger.error.assert_called_with("Unknown database action: unknown")
+    with patch("wattweight.cli.base.get_logger", return_value=logger):
+        args = argparse.Namespace(db_action="unknown")
+        result = upgrade_command.execute(args)
+        assert result == 1
+        logger.error.assert_called_with("Unknown database action: unknown")
 
 
 @patch("wattweight.cli.upgrade.MigrationManager")
+@patch("wattweight.cli.base.get_logger")
 def test_upgrade_database_success(
-    mock_manager, upgrade_command: UpgradeCommand, logger: Logger
+    mock_get_logger, mock_manager, upgrade_command: UpgradeCommand, logger: Logger
 ):
     """Test upgrading the database successfully."""
+    mock_get_logger.return_value = logger
     args = argparse.Namespace(db_action="upgrade")
     result = upgrade_command.execute(args)
     assert result == 0
@@ -69,10 +74,12 @@ def test_upgrade_database_success(
 
 
 @patch("wattweight.cli.upgrade.MigrationManager")
+@patch("wattweight.cli.base.get_logger")
 def test_upgrade_database_runtime_error(
-    mock_manager, upgrade_command: UpgradeCommand, logger: Logger
+    mock_get_logger, mock_manager, upgrade_command: UpgradeCommand, logger: Logger
 ):
     """Test upgrading the database with a failure."""
+    mock_get_logger.return_value = logger
     mock_manager.return_value.upgrade.side_effect = RuntimeError("Upgrade failed")
     args = argparse.Namespace(db_action="upgrade")
     result = upgrade_command.execute(args)
@@ -81,10 +88,12 @@ def test_upgrade_database_runtime_error(
 
 
 @patch("wattweight.cli.upgrade.MigrationManager")
+@patch("wattweight.cli.base.get_logger")
 def test_upgrade_database_exception(
-    mock_manager, upgrade_command: UpgradeCommand, logger: Logger
+    mock_get_logger, mock_manager, upgrade_command: UpgradeCommand, logger: Logger
 ):
     """Test a generic exception when upgrading the database."""
+    mock_get_logger.return_value = logger
     mock_manager.return_value.upgrade.side_effect = Exception("Random error")
     args = argparse.Namespace(db_action="upgrade")
     result = upgrade_command.execute(args)
@@ -93,10 +102,12 @@ def test_upgrade_database_exception(
 
 
 @patch("wattweight.cli.upgrade.MigrationManager")
+@patch("wattweight.cli.base.get_logger")
 def test_create_migration_success(
-    mock_manager, upgrade_command: UpgradeCommand, logger: Logger
+    mock_get_logger, mock_manager, upgrade_command: UpgradeCommand, logger: Logger
 ):
     """Test creating a migration successfully."""
+    mock_get_logger.return_value = logger
     args = argparse.Namespace(db_action="migrate", message="New migration")
     result = upgrade_command.execute(args)
     assert result == 0
@@ -105,10 +116,12 @@ def test_create_migration_success(
 
 
 @patch("wattweight.cli.upgrade.MigrationManager")
+@patch("wattweight.cli.base.get_logger")
 def test_create_migration_runtime_error(
-    mock_manager, upgrade_command: UpgradeCommand, logger: Logger
+    mock_get_logger, mock_manager, upgrade_command: UpgradeCommand, logger: Logger
 ):
     """Test creating a migration with a failure."""
+    mock_get_logger.return_value = logger
     mock_manager.return_value.create_migration.side_effect = RuntimeError(
         "Migration failed"
     )
@@ -119,10 +132,12 @@ def test_create_migration_runtime_error(
 
 
 @patch("wattweight.cli.upgrade.MigrationManager")
+@patch("wattweight.cli.base.get_logger")
 def test_create_migration_exception(
-    mock_manager, upgrade_command: UpgradeCommand, logger: Logger
+    mock_get_logger, mock_manager, upgrade_command: UpgradeCommand, logger: Logger
 ):
     """Test a generic exception when creating a migration."""
+    mock_get_logger.return_value = logger
     mock_manager.return_value.create_migration.side_effect = Exception("Random error")
     args = argparse.Namespace(db_action="migrate", message="New migration")
     result = upgrade_command.execute(args)

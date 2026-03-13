@@ -12,9 +12,8 @@ class DeviceState(str, Enum):
 
 
 class DeviceMeasuringState(str, Enum):
-    UNKNOWN = "unknown"
     MEASURING = "measuring"
-    IDLE = "idle"
+    NOT_MEASURING = "not_measuring"
 
 
 class Device(SQLModel, table=True):
@@ -25,6 +24,6 @@ class Device(SQLModel, table=True):
     idle_timeout: int = 20 * 60  # Default idle timeout in seconds (20 minutes)
     idle_power: float = 2.0  # Power consumption when idle (in watts)
     state: DeviceState = DeviceState.UNKNOWN
-    measuring_state: DeviceMeasuringState = DeviceMeasuringState.UNKNOWN
+    measuring_state: DeviceMeasuringState = DeviceMeasuringState.NOT_MEASURING
 
     measurements: List["Measurement"] = Relationship(back_populates="device")

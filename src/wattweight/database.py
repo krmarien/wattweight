@@ -30,7 +30,7 @@ class Database:
             self.db_dir = None
             self.db_path = None
         else:  # pragma: no cover
-            self.db_dir = db_dir or Path(
+            self.db_dir = Path(
                 os.getenv("WATTWEIGHT_DB_DIR", Path.cwd() / ".wattweight")
             )
             self.db_path = self.db_dir / "wattweight.db"
