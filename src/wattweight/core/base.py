@@ -62,6 +62,12 @@ class BaseManager:
         if BaseManager._session_owner == self.__class__:
             BaseManager._session_depth -= 1
             if BaseManager._session_depth == 0 and BaseManager._session is not None:
-                BaseManager._session.close()
+                # Use Database's session removal logic to ensure singleton session
+                # caches (e.g. scoped sessions) are cleaned up.
+                try:
+                    self.db.remove_session()
+                except Exception:
+                    BaseManager._session.close()
+
                 BaseManager._session = None
                 BaseManager._session_owner = None

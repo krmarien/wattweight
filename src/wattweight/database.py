@@ -6,6 +6,7 @@ from typing import Optional
 
 from sqlmodel import SQLModel, create_engine, Session
 from sqlalchemy import Engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from wattweight.logger import get_logger
 
@@ -38,6 +39,7 @@ class Database:
 
         self.echo = echo
         self._engine: Optional[Engine] = None
+        self._session_factory: Optional[scoped_session] = None
         self._logger = get_logger()
 
     @property
@@ -69,17 +71,34 @@ class Database:
         """Get a database session.
 
         Returns:
-            A new database session
+            A shared database session for the current thread.
         """
-        self._logger.debug("Creating new database session")
-        return Session(self.engine)
+        if self._session_factory is None:
+            self._session_factory = scoped_session(
+                sessionmaker(class_=Session, bind=self.engine)
+            )
+        session = self._session_factory()
+        self._logger.debug(f"Getting database session {session}")
+        return session
 
     def close(self) -> None:
         """Close the database connection."""
+        if self._session_factory is not None:
+            self._logger.debug("Removing scoped session")
+            self._session_factory.remove()
+            self._session_factory = None
+
         if self._engine is not None:
             self._logger.debug("Closing database connection")
             self._engine.dispose()
             self._engine = None
+
+    def remove_session(self) -> None:
+        """Remove the current session (useful for closing scoped session)."""
+        if self._session_factory is not None:
+            self._logger.debug("Removing database session")
+            self._session_factory.remove()
+            self._session_factory = None
 
     def __enter__(self) -> "Database":
         """Context manager entry."""
