@@ -1,72 +1,50 @@
-"""Unit tests for the MeasurementManager."""
+"""Unit tests for the MeasurementCore."""
 
 import pytest
-from typing import Generator
+from sqlmodel import Session
 
-from wattweight.database import Database
-from wattweight.core.device import DeviceManager
-from wattweight.core.measurement import MeasurementManager
-from wattweight.model.device import Device
-
-
-@pytest.fixture
-def db() -> Generator[Database, None, None]:
-    """Fixture for an in-memory database."""
-    database = Database(db_dir=None)
-    with database as db_conn:
-        yield db_conn
+from wattweight.core.device import DeviceCore
+from wattweight.core.measurement import MeasurementCore
+from wattweight.model.device import Device, DeviceMeasuringState
 
 
 @pytest.fixture
-def device_manager(db: Database) -> DeviceManager:
-    """Fixture for the DeviceManager."""
-    return DeviceManager(db)
-
-
-@pytest.fixture
-def measurement_manager(db: Database) -> MeasurementManager:
-    """Fixture for the MeasurementManager."""
-    return MeasurementManager(db)
-
-
-@pytest.fixture
-def device(device_manager: DeviceManager) -> Device:
+def device(session: Session) -> Device:
     """Fixture for a test device."""
-    return device_manager.add_device(identifier="test-device", name="Test Device")
+    device_core = DeviceCore()
+    return device_core.add_device(identifier="test-device", name="Test Device")
 
 
-def test_add_measurement(
-    device_manager: DeviceManager,
-    measurement_manager: MeasurementManager,
-    device: Device,
-):
+def test_add_measurement(session: Session, device: Device):
     """Test adding a new measurement."""
-    measurement = measurement_manager.add_measurement(
+    device_core = DeviceCore()
+    measurement_core = MeasurementCore()
+    measurement = measurement_core.add_measurement(
         value=100.0,
         device=device,
     )
     assert measurement.value == 100.0
     assert measurement.device_id == device.id
-    assert device.measuring_state == device.measuring_state.MEASURING
+    assert device.measuring_state == DeviceMeasuringState.MEASURING
 
-    assert (
-        device_manager.get_device_by_identifier(device.identifier).measuring_state
-        == device.measuring_state
-    )
+    refreshed_device = device_core.get_device_by_identifier(device.identifier)
+    assert refreshed_device.measuring_state == device.measuring_state
 
 
-def test_get_measurements(measurement_manager: MeasurementManager, device: Device):
+def test_get_measurements(session: Session, device: Device):
     """Test getting all measurements for a device."""
-    measurement_manager.add_measurement(value=100.0, device=device)
-    measurement_manager.add_measurement(value=110.0, device=device)
+    measurement_core = MeasurementCore()
+    measurement_core.add_measurement(value=100.0, device=device)
+    measurement_core.add_measurement(value=110.0, device=device)
 
-    measurements = measurement_manager.get_measurements(device)
+    measurements = measurement_core.get_measurements(device)
     assert len(measurements) == 2
 
 
 def test_get_measurements_for_device_with_no_measurements(
-    measurement_manager: MeasurementManager, device: Device
+    session: Session, device: Device
 ):
     """Test getting measurements for a device with no measurements."""
-    measurements = measurement_manager.get_measurements(device)
+    measurement_core = MeasurementCore()
+    measurements = measurement_core.get_measurements(device)
     assert len(measurements) == 0

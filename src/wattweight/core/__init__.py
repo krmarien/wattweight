@@ -1,17 +1,17 @@
 """Core business logic for wattweight."""
 
 from wattweight.core.device import (
-    DeviceManager,
+    DeviceCore,
     DeviceNotFoundError,
     DeviceAlreadyExistsError,
 )
-from wattweight.core.measurement import MeasurementManager
-from wattweight.core.migration import MigrationManager
+from wattweight.core.measurement import MeasurementCore
+from wattweight.core.migration import MigrationCore
 
 __all__ = [
-    "DeviceManager",
+    "DeviceCore",
     "DeviceNotFoundError",
     "DeviceAlreadyExistsError",
-    "MeasurementManager",
-    "MigrationManager",
+    "MeasurementCore",
+    "MigrationCore",
 ]

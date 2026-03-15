@@ -7,12 +7,15 @@ from typing import Optional
 from tabulate import tabulate
 
 from wattweight.cli.base import BaseCommand
-from wattweight.core.device import DeviceManager, DeviceNotFoundError
-from wattweight.core.measurement import MeasurementManager
+from wattweight.core.device import DeviceCore, DeviceNotFoundError
+from wattweight.core.measurement import MeasurementCore
 
 
 class MeasurementCommand(BaseCommand):
     """Command for managing measurements."""
+
+    def __init__(self):
+        super().__init__()
 
     @classmethod
     def register(self, subparsers: argparse._SubParsersAction) -> None:
@@ -41,8 +44,8 @@ class MeasurementCommand(BaseCommand):
         add_parser.add_argument(
             "--timestamp",
             type=datetime.fromisoformat,
-            help="Measurement timestamp in ISO format (e.g., 2024-03-09T10:30:00). \
-                If not provided, uses current UTC time.",
+            help="Measurement timestamp in ISO format (e.g., 2024-03-09T10:30:00). "
+            "If not provided, uses current UTC time.",
         )
 
         # List subcommand
@@ -68,24 +71,20 @@ class MeasurementCommand(BaseCommand):
             )
             return 1
 
-        manager = MeasurementManager(self.db)
-
         if args.measurement_action == "add":
             return self._add_measurement(
-                manager,
                 args.device_identifier,
                 args.value,
                 getattr(args, "timestamp", None),
             )
         elif args.measurement_action == "list":
-            return self._list_measurements(manager, args.device_identifier)
+            return self._list_measurements(args.device_identifier)
         else:
             self.logger.error(f"Unknown measurement action: {args.measurement_action}")
             return 1
 
     def _add_measurement(
         self,
-        manager: MeasurementManager,
         device_identifier: str,
         value: float,
         timestamp: Optional[datetime] = None,
@@ -93,7 +92,6 @@ class MeasurementCommand(BaseCommand):
         """Add a new measurement.
 
         Args:
-            manager: MeasurementManager instance
             device_identifier: Identifier of the device to which the measurement belongs
             value: Measurement value
             timestamp: Optional measurement timestamp in UTC. If None, uses current UTC
@@ -108,11 +106,12 @@ class MeasurementCommand(BaseCommand):
         )
 
         try:
+            device_core = DeviceCore()
+            measurement_core = MeasurementCore()
             # Resolve device identifier to device_id
-            device_manager = DeviceManager(self.db)
-            device = device_manager.get_device_by_identifier(device_identifier)
+            device = device_core.get_device_by_identifier(device_identifier)
 
-            _ = manager.add_measurement(
+            _ = measurement_core.add_measurement(
                 value=value,
                 device=device,
                 timestamp=timestamp,
@@ -126,13 +125,10 @@ class MeasurementCommand(BaseCommand):
             self.logger.error(f"Failed to add measurement: {str(e)}")
             return 1
 
-    def _list_measurements(
-        self, manager: MeasurementManager, device_identifier: str
-    ) -> int:
+    def _list_measurements(self, device_identifier: str) -> int:
         """List all measurements for a specific device.
 
         Args:
-            manager: MeasurementManager instance
             device_identifier: Identifier of the device for which to list measurements
 
         Returns:
@@ -141,11 +137,12 @@ class MeasurementCommand(BaseCommand):
         self.logger.debug(f"Listing all measurements for device: {device_identifier}")
 
         try:
+            device_core = DeviceCore()
+            measurement_core = MeasurementCore()
             # Resolve device identifier to device_id
-            device_manager = DeviceManager(self.db)
-            device = device_manager.get_device_by_identifier(device_identifier)
+            device = device_core.get_device_by_identifier(device_identifier)
 
-            measurements = manager.get_measurements(device)
+            measurements = measurement_core.get_measurements(device)
 
             if not measurements:
                 self.logger.warning("No measurements found")
@@ -161,7 +158,7 @@ class MeasurementCommand(BaseCommand):
             # Print table using tabulate
             print()
             print(tabulate(data, headers=headers, tablefmt="grid"))
-            print(f"\nTotal: {len(measurements)} measurements(s)\n")
+            print(f"Total: {len(measurements)} measurements(s)\\n")
             return 0
 
         except DeviceNotFoundError as e:

@@ -1,12 +1,10 @@
 """Device State Service core business logic."""
 
-
-from wattweight.core.base import BaseManager
 from wattweight.logger import get_logger
 from wattweight.model.device import Device
 
 
-class DeviceStateService(BaseManager):
+class DeviceStateService:
     @staticmethod
     def update_state(device: Device):
         """Update the state of a device based on its last measurement time and idle

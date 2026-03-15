@@ -6,8 +6,8 @@ from typing import Optional
 from tabulate import tabulate
 
 from wattweight.cli.base import BaseCommand
-from wattweight.core import (
-    DeviceManager,
+from wattweight.core.device import (
+    DeviceCore,
     DeviceNotFoundError,
     DeviceAlreadyExistsError,
 )
@@ -15,6 +15,9 @@ from wattweight.core import (
 
 class DeviceCommand(BaseCommand):
     """Command for managing devices."""
+
+    def __init__(self):
+        super().__init__()
 
     @classmethod
     def register(self, subparsers: argparse._SubParsersAction) -> None:
@@ -81,11 +84,8 @@ class DeviceCommand(BaseCommand):
             )
             return 1
 
-        manager = DeviceManager(self.db)
-
         if args.device_action == "add":
             return self._add_device(
-                manager,
                 args.identifier,
                 args.name,
                 args.description,
@@ -93,10 +93,9 @@ class DeviceCommand(BaseCommand):
                 args.idle_power,
             )
         elif args.device_action == "list":
-            return self._list_devices(manager)
+            return self._list_devices()
         elif args.device_action == "modify":
             return self._modify_device(
-                manager,
                 args.identifier,
                 args.name,
                 args.description,
@@ -104,14 +103,13 @@ class DeviceCommand(BaseCommand):
                 args.idle_power,
             )
         elif args.device_action == "remove":
-            return self._remove_device(manager, args.identifier)
+            return self._remove_device(args.identifier)
         else:
             self.logger.error(f"Unknown device action: {args.device_action}")
             return 1
 
     def _add_device(
         self,
-        manager: DeviceManager,
         identifier: str,
         name: str,
         description: Optional[str] = None,
@@ -121,7 +119,6 @@ class DeviceCommand(BaseCommand):
         """Add a new device.
 
         Args:
-            manager: DeviceManager instance
             identifier: Device identifier
             name: Device name
             description: Device description (optional)
@@ -134,7 +131,8 @@ class DeviceCommand(BaseCommand):
         self.logger.debug(f"Adding device: {identifier} ({name})")
 
         try:
-            _ = manager.add_device(
+            device_core = DeviceCore()
+            _ = device_core.add_device(
                 identifier,
                 name,
                 description=description,
@@ -150,11 +148,8 @@ class DeviceCommand(BaseCommand):
             self.logger.error(f"Failed to add device: {str(e)}")
             return 1
 
-    def _list_devices(self, manager: DeviceManager) -> int:
+    def _list_devices(self) -> int:
         """List all devices.
-
-        Args:
-            manager: DeviceManager instance
 
         Returns:
             Exit code
@@ -162,7 +157,8 @@ class DeviceCommand(BaseCommand):
         self.logger.debug("Listing all devices")
 
         try:
-            devices = manager.get_all_devices()
+            device_core = DeviceCore()
+            devices = device_core.get_all_devices()
 
             if not devices:
                 self.logger.warning("No devices found")
@@ -194,7 +190,7 @@ class DeviceCommand(BaseCommand):
             # Print table using tabulate
             print()
             print(tabulate(data, headers=headers, tablefmt="grid"))
-            print(f"\nTotal: {len(devices)} device(s)\n")
+            print(f"Total: {len(devices)} device(s)\\n")
             return 0
 
         except Exception as e:
@@ -203,7 +199,6 @@ class DeviceCommand(BaseCommand):
 
     def _modify_device(
         self,
-        manager: DeviceManager,
         identifier: str,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -213,7 +208,6 @@ class DeviceCommand(BaseCommand):
         """Modify a device.
 
         Args:
-            manager: DeviceManager instance
             identifier: Device identifier to modify
             name: New device name (optional)
             description: New device description (optional)
@@ -226,7 +220,8 @@ class DeviceCommand(BaseCommand):
         self.logger.debug(f"Modifying device: {identifier}")
 
         try:
-            manager.update_device(
+            device_core = DeviceCore()
+            device_core.update_device(
                 identifier,
                 name=name,
                 description=description,
@@ -245,11 +240,10 @@ class DeviceCommand(BaseCommand):
             self.logger.error(f"Failed to modify device: {str(e)}")
             return 1
 
-    def _remove_device(self, manager: DeviceManager, identifier: str) -> int:
+    def _remove_device(self, identifier: str) -> int:
         """Remove a device.
 
         Args:
-            manager: DeviceManager instance
             identifier: Device identifier to remove
 
         Returns:
@@ -258,7 +252,8 @@ class DeviceCommand(BaseCommand):
         self.logger.debug(f"Removing device: {identifier}")
 
         try:
-            manager.delete_device(identifier)
+            device_core = DeviceCore()
+            device_core.delete_device(identifier)
             return 0
 
         except DeviceNotFoundError as e:

@@ -14,45 +14,58 @@ from wattweight.logger import get_logger
 class Database:
     """Database manager for wattweight."""
 
+    _instance: Optional["Database"] = None
+
     def __init__(
         self,
+        in_memory: bool = False,
         db_dir: Optional[Path] = None,
         echo: bool = False,
     ):
         """Initialize the database manager.
 
         Args:
+            in_memory: Whether to use an in-memory database (overrides db_dir)
             db_dir: Directory to store the database. If None, an in-memory database is
                 used. Defaults to ~/.wattweight
             echo: Whether to echo SQL statements for debugging
         """
-        if db_dir is None:
+        if in_memory:
             self.database_url = "sqlite:///:memory:"
             self.db_dir = None
             self.db_path = None
         else:  # pragma: no cover
-            self.db_dir = Path(
-                os.getenv("WATTWEIGHT_DB_DIR", Path.cwd() / ".wattweight")
+            self.db_dir = db_dir or Path(
+                os.getenv(
+                    "WATTWEIGHT_DB_DIR", Path.home() / ".wattweight" / "wattweight.db"
+                )
             )
             self.db_path = self.db_dir / "wattweight.db"
             self.database_url = f"sqlite:///{self.db_path}"
-
         self.echo = echo
         self._engine: Optional[Engine] = None
         self._session_factory: Optional[scoped_session] = None
         self._logger = get_logger()
+        Database._instance = self
 
     @property
     def engine(self) -> Engine:
         """Get or create the database engine (lazy initialization)."""
         if self._engine is None:
-            self._logger.debug(f"Creating database connection: {self.db_path}")
+            self._logger.debug(f"Creating database connection: {self.database_url}")
             self._engine = create_engine(
                 self.database_url,
                 echo=self.echo,
                 connect_args={"check_same_thread": False},
             )
         return self._engine
+
+    @classmethod
+    def get_instance(cls) -> "Database":
+        """Get the singleton Database instance."""
+        if cls._instance is None:
+            cls._instance = Database()
+        return cls._instance
 
     def init_db(self) -> None:
         """Initialize the database, creating tables if they don't exist."""

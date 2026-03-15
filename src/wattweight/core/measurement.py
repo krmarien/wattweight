@@ -1,27 +1,16 @@
-"""Measurement management core business logic."""
-
 from datetime import datetime
 from typing import List, Optional
 
 from sqlmodel import select
 
+from wattweight.core.base import Core
 from wattweight.core.device_state import DeviceStateService
-from wattweight.database import Database
 from wattweight.model import Measurement
 from wattweight.model.device import Device, DeviceMeasuringState
-from wattweight.core.base import BaseManager
 
 
-class MeasurementManager(BaseManager):
-    """Manager for measurement operations."""
-
-    def __init__(self, db: Database):
-        """Initialize the measurement manager.
-
-        Args:
-            db: Database instance
-        """
-        super().__init__(db)
+class MeasurementCore(Core):
+    """Core class for measurement operations."""
 
     def add_measurement(
         self,
@@ -29,22 +18,7 @@ class MeasurementManager(BaseManager):
         device: Device,
         timestamp: Optional[datetime] = None,
     ) -> Measurement:
-        """Add a new measurement.
-
-        Args:
-            value: Measurement value
-            device_id: ID of the device to which the measurement belongs
-            timestamp: Optional measurement timestamp in UTC. If None, uses current UTC
-                time.
-
-        Returns:
-            The created Measurement object
-
-        Raises:
-            Exception: If database operation fails
-        """
-        session = self._get_session()
-
+        """Add a new measurement."""
         device.measuring_state = DeviceMeasuringState.MEASURING
 
         # Create and add measurement
@@ -53,31 +27,17 @@ class MeasurementManager(BaseManager):
             device_id=device.id,
             timestamp=timestamp,
         )
-        session.add(measurement)
-        session.commit()
-        session.refresh(measurement)
+        self.db.add(measurement)
+        self.db.commit()
+        self.db.refresh(measurement)
 
-        DeviceStateService.update_state(session.get(Device, device.id))
-
-        self.logger.info("Measurement added successfully")
+        DeviceStateService.update_state(self.db.get(Device, device.id))
 
         return measurement
 
     def get_measurements(self, device: Device) -> List[Measurement]:
-        """Get all measurements for a device by its identifier.
-
-        Args:
-            device: The device for which to get measurements
-
-        Returns:
-            List of all Measurement objects for the specified device
-
-        Raises:
-            DeviceNotFoundError: If device is not found
-        """
-        session = self._get_session()
-
-        measurements = session.exec(
+        """Get all measurements for a device by its identifier."""
+        measurements = self.db.exec(
             select(Measurement).where(Measurement.device_id == device.id)
         ).all()
         return measurements

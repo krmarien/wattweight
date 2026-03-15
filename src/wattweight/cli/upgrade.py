@@ -3,11 +3,14 @@
 import argparse
 
 from wattweight.cli.base import BaseCommand
-from wattweight.core.migration import MigrationManager
+from wattweight.core.migration import MigrationCore
 
 
 class UpgradeCommand(BaseCommand):
     """Command for managing database upgrades and migrations."""
+
+    def __init__(self):
+        super().__init__()
 
     @classmethod
     def register(self, subparsers: argparse._SubParsersAction) -> None:
@@ -67,8 +70,8 @@ class UpgradeCommand(BaseCommand):
         self.logger.info("Starting database upgrade...")
 
         try:
-            manager = MigrationManager(self.db)
-            manager.upgrade()
+            migration_core = MigrationCore()
+            migration_core.upgrade()
             self.logger.info("Database upgraded successfully")
             return 0
 
@@ -91,8 +94,8 @@ class UpgradeCommand(BaseCommand):
         self.logger.info(f"Creating migration: {message}")
 
         try:
-            manager = MigrationManager(self.db)
-            manager.create_migration(message)
+            migration_core = MigrationCore()
+            migration_core.create_migration(message)
             self.logger.info("Migration created successfully")
             return 0
 

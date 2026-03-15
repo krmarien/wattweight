@@ -1,12 +1,9 @@
-"""Device management core business logic."""
-
 from typing import List, Optional
 
 from sqlmodel import select
 
-from wattweight.database import Database
+from wattweight.core.base import Core
 from wattweight.model import Device
-from wattweight.core.base import BaseManager
 
 
 class DeviceNotFoundError(Exception):
@@ -21,16 +18,8 @@ class DeviceAlreadyExistsError(Exception):
     pass
 
 
-class DeviceManager(BaseManager):
-    """Manager for device operations."""
-
-    def __init__(self, db: Database):
-        """Initialize the device manager.
-
-        Args:
-            db: Database instance
-        """
-        super().__init__(db)
+class DeviceCore(Core):
+    """Core class for device operations."""
 
     def add_device(
         self,
@@ -40,26 +29,9 @@ class DeviceManager(BaseManager):
         idle_timeout: int = 20 * 60,
         idle_power: float = 2.0,
     ) -> Device:
-        """Add a new device.
-
-        Args:
-            identifier: Device identifier (must be unique)
-            name: Device name
-            description: Optional device description
-            idle_timeout: Idle timeout in seconds (default: 1200)
-            idle_power: Power consumption when idle in watts (default: 2.0)
-
-        Returns:
-            The created Device object
-
-        Raises:
-            DeviceAlreadyExistsError: If a device with the same identifier exists
-            Exception: If database operation fails
-        """
-        session = self._get_session()
-
+        """Add a new device."""
         # Check if device already exists
-        existing = session.exec(
+        existing = self.db.exec(
             select(Device).where(Device.identifier == identifier)
         ).first()
 
@@ -76,38 +48,20 @@ class DeviceManager(BaseManager):
             idle_timeout=idle_timeout,
             idle_power=idle_power,
         )
-        session.add(device)
-        session.commit()
-        session.refresh(device)
-
-        self.logger.info(f"Device '{name}' (ID: {device.id}) created successfully")
+        self.db.add(device)
+        self.db.commit()
+        self.db.refresh(device)
 
         return device
 
     def get_all_devices(self) -> List[Device]:
-        """Get all devices.
-
-        Returns:
-            List of all Device objects
-        """
-        session = self._get_session()
-        devices = session.exec(select(Device)).all()
+        """Get all devices."""
+        devices = self.db.exec(select(Device)).all()
         return devices
 
     def get_device_by_identifier(self, identifier: str) -> Device:
-        """Get a device by identifier.
-
-        Args:
-            identifier: Device identifier
-
-        Returns:
-            The Device object
-
-        Raises:
-            DeviceNotFoundError: If device is not found
-        """
-        session = self._get_session()
-        device = session.exec(
+        """Get a device by identifier."""
+        device = self.db.exec(
             select(Device).where(Device.identifier == identifier)
         ).first()
 
@@ -126,27 +80,11 @@ class DeviceManager(BaseManager):
         idle_timeout: Optional[int] = None,
         idle_power: Optional[float] = None,
     ) -> Device:
-        """Update a device.
-
-        Args:
-            identifier: Device identifier
-            name: New device name (optional)
-            description: New device description (optional)
-            idle_timeout: New idle timeout in seconds (optional)
-            idle_power: New idle power in watts (optional)
-
-        Returns:
-            The updated Device object
-
-        Raises:
-            DeviceNotFoundError: If device is not found
-            ValueError: If no fields are provided to update
-        """
+        """Update a device."""
         if all(v is None for v in [name, description, idle_timeout, idle_power]):
             raise ValueError("At least one field must be provided to update")
 
-        session = self._get_session()
-        device = session.exec(
+        device = self.db.exec(
             select(Device).where(Device.identifier == identifier)
         ).first()
 
@@ -165,25 +103,15 @@ class DeviceManager(BaseManager):
         if idle_power is not None:
             device.idle_power = idle_power
 
-        session.add(device)
-        session.commit()
-        session.refresh(device)
-
-        self.logger.info(f"Device '{identifier}' updated successfully")
+        self.db.add(device)
+        self.db.commit()
+        self.db.refresh(device)
 
         return device
 
     def delete_device(self, identifier: str) -> None:
-        """Delete a device.
-
-        Args:
-            identifier: Device identifier
-
-        Raises:
-            DeviceNotFoundError: If device is not found
-        """
-        session = self._get_session()
-        device = session.exec(
+        """Delete a device."""
+        device = self.db.exec(
             select(Device).where(Device.identifier == identifier)
         ).first()
 
@@ -193,9 +121,7 @@ class DeviceManager(BaseManager):
             )
 
         for measurement in device.measurements:
-            session.delete(measurement)
+            self.db.delete(measurement)
 
-        session.delete(device)
-        session.commit()
-
-        self.logger.info(f"Device '{identifier}' removed successfully")
+        self.db.delete(device)
+        self.db.commit()

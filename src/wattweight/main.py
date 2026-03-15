@@ -1,15 +1,14 @@
 """Main module for wattweight."""
 
 import argparse
-from pathlib import Path
 import sys
 from importlib.metadata import version, PackageNotFoundError
 
 from wattweight.cli.measurement import MeasurementCommand
 from wattweight.database import Database
 from wattweight.logger import get_logger, set_log_level, LogLevel
-from wattweight.cli import DeviceCommand, UpgradeCommand
-from wattweight.core.base import BaseManager
+from wattweight.cli.device import DeviceCommand
+from wattweight.cli.upgrade import UpgradeCommand
 
 
 def get_version() -> str:
@@ -60,32 +59,28 @@ def main() -> int:
         parser.print_help()
         return 0
 
-    # Initialize database with context manager
-    with Database(Path.cwd() / ".wattweight") as db:
-        logger = get_logger()
+    logger = get_logger()
 
-        # Create a shared session for all managers
-        session = db.get_session()
-        BaseManager.set_session(session)
+    with Database() as db:
+        db.init_db()
 
         try:
             # Execute commands
             if args.command == "device":
-                command = DeviceCommand(db)
+                command = DeviceCommand()
                 return command.execute(args)
             elif args.command == "db":
-                command = UpgradeCommand(db)
+                command = UpgradeCommand()
                 return command.execute(args)
             elif args.command == "measurement":
-                command = MeasurementCommand(db)
+                command = MeasurementCommand()
                 return command.execute(args)
             else:
                 logger.error(f"Unknown command: {args.command}")
                 return 1
-        finally:
-            # Clean up: reset the shared session
-            session.close()
-            BaseManager.set_session(None)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+            return 1
 
 
 if __name__ == "__main__":
