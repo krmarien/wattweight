@@ -1,7 +1,8 @@
 """Unit tests for the MeasurementCommand."""
 
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -18,9 +19,9 @@ def logger() -> Logger:
 
 
 @pytest.fixture
-def measurement_command(logger: Logger) -> MeasurementCommand:
+def measurement_command(logger: Logger) -> Generator[MeasurementCommand, None, None]:
     """Fixture for the MeasurementCommand."""
-    with patch("wattweight.cli.base.get_logger", return_value=logger):
+    with patch("wattweight.cli.base.Logger", return_value=logger):
         yield MeasurementCommand()
 
 
@@ -154,7 +155,7 @@ def test_list_measurements(
     )
     mock_measurement = MagicMock()
     mock_measurement.id = 1
-    mock_measurement.timestamp = datetime.utcnow()
+    mock_measurement.timestamp = datetime.now(timezone.utc)
     mock_measurement.value = 100.0
     mock_measurement_core.return_value.get_measurements.return_value = [
         mock_measurement

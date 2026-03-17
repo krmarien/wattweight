@@ -22,7 +22,7 @@ class MigrationCore(Core):
         """
         try:
             env = os.environ.copy()
-            env["SQLALCHEMY_URL"] = Database.get_instance().database_url
+            env["SQLALCHEMY_URL"] = Database().database_url
 
             subprocess.run(
                 [
@@ -55,7 +55,7 @@ class MigrationCore(Core):
         """
         try:
             env = os.environ.copy()
-            env["SQLALCHEMY_URL"] = Database.get_instance().database_url
+            env["SQLALCHEMY_URL"] = Database().database_url
 
             result = subprocess.run(
                 [

@@ -1,7 +1,6 @@
 """Unit tests for the DeviceCore."""
 
 import pytest
-from sqlmodel import Session
 
 from wattweight.core.device import (
     DeviceCore,
@@ -10,7 +9,7 @@ from wattweight.core.device import (
 )
 
 
-def test_add_device(session: Session):
+def test_add_device():
     """Test adding a new device."""
     device_core = DeviceCore()
     device = device_core.add_device(
@@ -23,7 +22,7 @@ def test_add_device(session: Session):
     assert device.description == "A test device"
 
 
-def test_add_device_already_exists(session: Session):
+def test_add_device_already_exists():
     """Test adding a device that already exists."""
     device_core = DeviceCore()
     device_core.add_device(identifier="test-device", name="Test Device")
@@ -31,7 +30,7 @@ def test_add_device_already_exists(session: Session):
         device_core.add_device(identifier="test-device", name="Another Device")
 
 
-def test_get_all_devices(session: Session):
+def test_get_all_devices():
     """Test getting all devices."""
     device_core = DeviceCore()
     device_core.add_device(identifier="dev1", name="Device 1")
@@ -41,7 +40,7 @@ def test_get_all_devices(session: Session):
     assert len(devices) == 2
 
 
-def test_get_device_by_identifier(session: Session):
+def test_get_device_by_identifier():
     """Test getting a device by its identifier."""
     device_core = DeviceCore()
     device_core.add_device(identifier="test-device", name="Test Device")
@@ -51,14 +50,14 @@ def test_get_device_by_identifier(session: Session):
     assert device.name == "Test Device"
 
 
-def test_get_device_by_identifier_not_found(session: Session):
+def test_get_device_by_identifier_not_found():
     """Test getting a device that does not exist."""
     device_core = DeviceCore()
     with pytest.raises(DeviceNotFoundError):
         device_core.get_device_by_identifier("non-existent-device")
 
 
-def test_update_device(session: Session):
+def test_update_device():
     """Test updating a device."""
     device_core = DeviceCore()
     _ = device_core.add_device(identifier="test-device", name="Test Device")
@@ -71,14 +70,14 @@ def test_update_device(session: Session):
     assert updated_device.description == "Updated Description"
 
 
-def test_update_device_not_found(session: Session):
+def test_update_device_not_found():
     """Test updating a device that does not exist."""
     device_core = DeviceCore()
     with pytest.raises(DeviceNotFoundError):
         device_core.update_device(identifier="non-existent-device", name="New Name")
 
 
-def test_update_device_no_fields(session: Session):
+def test_update_device_no_fields():
     """Test updating a device with no fields."""
     device_core = DeviceCore()
     device_core.add_device(identifier="test-device", name="Test Device")
@@ -86,7 +85,7 @@ def test_update_device_no_fields(session: Session):
         device_core.update_device(identifier="test-device")
 
 
-def test_update_device_idle_timeout(session: Session):
+def test_update_device_idle_timeout():
     """Test updating only the idle_timeout of a device."""
     device_core = DeviceCore()
     device_core.add_device(
@@ -98,7 +97,7 @@ def test_update_device_idle_timeout(session: Session):
     assert updated_device.idle_timeout == 200
 
 
-def test_update_device_idle_power(session: Session):
+def test_update_device_idle_power():
     """Test updating only the idle_power of a device."""
     device_core = DeviceCore()
     device_core.add_device(identifier="test-device", name="Test Device", idle_power=5.0)
@@ -108,7 +107,7 @@ def test_update_device_idle_power(session: Session):
     assert updated_device.idle_power == 10.0
 
 
-def test_delete_device(session: Session):
+def test_delete_device():
     """Test deleting a device."""
     device_core = DeviceCore()
     _ = device_core.add_device(identifier="test-device", name="Test Device")
@@ -119,7 +118,7 @@ def test_delete_device(session: Session):
         device_core.get_device_by_identifier("test-device")
 
 
-def test_delete_device_not_found(session: Session):
+def test_delete_device_not_found():
     """Test deleting a device that does not exist."""
     device_core = DeviceCore()
     with pytest.raises(DeviceNotFoundError):

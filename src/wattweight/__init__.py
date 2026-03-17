@@ -1,12 +1,10 @@
 """Wattweight - Energy management library."""
 
 from wattweight.database import Database
-from wattweight.logger import Logger, LogLevel, get_logger, set_log_level
+from wattweight.logger import Logger, LogLevel
 
 __all__ = [
     "Database",
     "Logger",
     "LogLevel",
-    "get_logger",
-    "set_log_level",
 ]

@@ -2,13 +2,7 @@ import logging
 import unittest
 from unittest.mock import Mock, patch
 
-from wattweight.logger import (
-    ColorFormatter,
-    LogLevel,
-    Logger,
-    get_logger,
-    set_log_level,
-)
+from wattweight.logger import ColorFormatter, LogLevel, Logger
 
 
 class TestLogger(unittest.TestCase):
@@ -23,15 +17,15 @@ class TestLogger(unittest.TestCase):
         self.assertIs(logger1, logger2)
 
     def test_get_logger(self):
-        logger1 = get_logger()
-        logger2 = get_logger()
+        logger1 = Logger()
+        logger2 = Logger()
         self.assertIs(logger1, logger2)
         self.assertIsInstance(logger1, Logger)
 
     def test_set_log_level(self):
-        logger = get_logger()
+        logger = Logger()
         with patch.object(logger._logger.handlers[0], "setLevel") as mock_set_level:
-            set_log_level(LogLevel.INFO)
+            Logger.set_level(LogLevel.INFO)
             mock_set_level.assert_called_once_with(logging.INFO)
 
     @patch("logging.StreamHandler")
@@ -48,7 +42,7 @@ class TestLogger(unittest.TestCase):
 
     def test_log_functions(self):
         """Test the logging functions."""
-        logger = get_logger()
+        logger = Logger()
         with patch.object(logger._logger, "debug") as mock_debug, patch.object(
             logger._logger, "info"
         ) as mock_info, patch.object(

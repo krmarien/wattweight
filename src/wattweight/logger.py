@@ -99,14 +99,3 @@ class Logger:
     def critical(self, message: str) -> None:
         """Log a critical message."""
         self._logger.critical(message)
-
-
-# Module-level convenience functions
-def set_log_level(level: LogLevel) -> None:
-    """Set the global log level."""
-    Logger.set_level(level)
-
-
-def get_logger() -> Logger:
-    """Get the global logger instance."""
-    return Logger()

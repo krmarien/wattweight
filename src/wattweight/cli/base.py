@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 import argparse
-from wattweight.logger import Logger, get_logger
+from wattweight.logger import Logger
 
 
 class BaseCommand(ABC):
@@ -15,7 +15,7 @@ class BaseCommand(ABC):
     @property
     def logger(self) -> Logger:
         """Get the logger instance."""
-        return get_logger()
+        return Logger()
 
     @classmethod
     @abstractmethod
@@ -25,7 +25,7 @@ class BaseCommand(ABC):
         Args:
             subparsers: The subparsers action from ArgumentParser
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @abstractmethod
     def execute(self, args: argparse.Namespace) -> int:

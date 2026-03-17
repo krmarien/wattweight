@@ -1,6 +1,7 @@
 """Unit tests for the UpgradeCommand."""
 
 import argparse
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -16,9 +17,9 @@ def logger() -> Logger:
 
 
 @pytest.fixture
-def upgrade_command(logger: Logger) -> UpgradeCommand:
+def upgrade_command(logger: Logger) -> Generator[UpgradeCommand, None, None]:
     """Fixture for the UpgradeCommand."""
-    with patch("wattweight.cli.base.get_logger", return_value=logger):
+    with patch("wattweight.cli.base.Logger", return_value=logger):
         yield UpgradeCommand()
 
 

@@ -1,6 +1,7 @@
 """Unit tests for the DeviceCommand."""
 
 import argparse
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -17,9 +18,9 @@ def logger() -> Logger:
 
 
 @pytest.fixture
-def device_command(logger: Logger) -> DeviceCommand:
+def device_command(logger: Logger) -> Generator[DeviceCommand, None, None]:
     """Fixture for the DeviceCommand."""
-    with patch("wattweight.cli.base.get_logger", return_value=logger):
+    with patch("wattweight.cli.base.Logger", return_value=logger):
         yield DeviceCommand()
 
 

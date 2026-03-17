@@ -8,13 +8,21 @@ from sqlmodel import SQLModel, create_engine, Session
 from sqlalchemy import Engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from wattweight.logger import get_logger
+from wattweight.logger import Logger
 
 
 class Database:
     """Database manager for wattweight."""
 
     _instance: Optional["Database"] = None
+    _session_factory: Optional[scoped_session] = None
+    _engine: Optional[Engine] = None
+
+    def __new__(cls, *args, **kwargs) -> "Database":
+        """Singleton pattern to ensure only one logger instance."""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(
         self,
@@ -30,23 +38,24 @@ class Database:
                 used. Defaults to ~/.wattweight
             echo: Whether to echo SQL statements for debugging
         """
-        if in_memory:
-            self.database_url = "sqlite:///:memory:"
-            self.db_dir = None
-            self.db_path = None
-        else:  # pragma: no cover
-            self.db_dir = db_dir or Path(
-                os.getenv(
-                    "WATTWEIGHT_DB_DIR", Path.home() / ".wattweight" / "wattweight.db"
+
+        if self._engine is None:
+            if in_memory:
+                self.database_url = "sqlite:///:memory:"
+                self.db_dir = None
+                self.db_path = None
+            else:  # pragma: no cover
+                self.db_dir = db_dir or Path(
+                    os.getenv(
+                        "WATTWEIGHT_DB_DIR",
+                        Path.home() / ".wattweight" / "wattweight.db",
+                    )
                 )
-            )
-            self.db_path = self.db_dir / "wattweight.db"
-            self.database_url = f"sqlite:///{self.db_path}"
-        self.echo = echo
-        self._engine: Optional[Engine] = None
-        self._session_factory: Optional[scoped_session] = None
-        self._logger = get_logger()
-        Database._instance = self
+                self.db_path = self.db_dir / "wattweight.db"
+                self.database_url = f"sqlite:///{self.db_path}"
+            self.echo = echo
+            self._logger = Logger()
+            _ = self.engine  # Trigger engine creation
 
     @property
     def engine(self) -> Engine:
@@ -59,13 +68,6 @@ class Database:
                 connect_args={"check_same_thread": False},
             )
         return self._engine
-
-    @classmethod
-    def get_instance(cls) -> "Database":
-        """Get the singleton Database instance."""
-        if cls._instance is None:
-            cls._instance = Database()
-        return cls._instance
 
     def init_db(self) -> None:
         """Initialize the database, creating tables if they don't exist."""
@@ -105,13 +107,6 @@ class Database:
             self._logger.debug("Closing database connection")
             self._engine.dispose()
             self._engine = None
-
-    def remove_session(self) -> None:
-        """Remove the current session (useful for closing scoped session)."""
-        if self._session_factory is not None:
-            self._logger.debug("Removing database session")
-            self._session_factory.remove()
-            self._session_factory = None
 
     def __enter__(self) -> "Database":
         """Context manager entry."""

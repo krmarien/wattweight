@@ -1,7 +1,6 @@
 """Unit tests for the MeasurementCore."""
 
 import pytest
-from sqlmodel import Session
 
 from wattweight.core.device import DeviceCore
 from wattweight.core.measurement import MeasurementCore
@@ -9,13 +8,13 @@ from wattweight.model.device import Device, DeviceMeasuringState
 
 
 @pytest.fixture
-def device(session: Session) -> Device:
+def device() -> Device:
     """Fixture for a test device."""
     device_core = DeviceCore()
     return device_core.add_device(identifier="test-device", name="Test Device")
 
 
-def test_add_measurement(session: Session, device: Device):
+def test_add_measurement(device: Device):
     """Test adding a new measurement."""
     device_core = DeviceCore()
     measurement_core = MeasurementCore()
@@ -31,7 +30,7 @@ def test_add_measurement(session: Session, device: Device):
     assert refreshed_device.measuring_state == device.measuring_state
 
 
-def test_get_measurements(session: Session, device: Device):
+def test_get_measurements(device: Device):
     """Test getting all measurements for a device."""
     measurement_core = MeasurementCore()
     measurement_core.add_measurement(value=100.0, device=device)
@@ -41,9 +40,7 @@ def test_get_measurements(session: Session, device: Device):
     assert len(measurements) == 2
 
 
-def test_get_measurements_for_device_with_no_measurements(
-    session: Session, device: Device
-):
+def test_get_measurements_for_device_with_no_measurements(device: Device):
     """Test getting measurements for a device with no measurements."""
     measurement_core = MeasurementCore()
     measurements = measurement_core.get_measurements(device)

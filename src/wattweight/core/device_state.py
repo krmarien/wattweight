@@ -1,6 +1,6 @@
 """Device State Service core business logic."""
 
-from wattweight.logger import get_logger
+from wattweight.logger import Logger
 from wattweight.model.device import Device
 
 
@@ -14,7 +14,7 @@ class DeviceStateService:
             device: The device to update
         """
 
-        logger = get_logger()
+        logger = Logger()
 
         if len(device.measurements) == 0:
             logger.debug(
