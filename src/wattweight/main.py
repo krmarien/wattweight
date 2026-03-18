@@ -6,7 +6,7 @@ from importlib.metadata import version, PackageNotFoundError
 
 from wattweight.cli.measurement import MeasurementCommand
 from wattweight.database import Database
-from wattweight.logger import get_logger, set_log_level, LogLevel
+from wattweight.logger import Logger, LogLevel
 from wattweight.cli.device import DeviceCommand
 from wattweight.cli.upgrade import UpgradeCommand
 
@@ -49,17 +49,17 @@ def main() -> int:
 
     # Configure logging based on verbosity
     if args.verbose == 0:
-        set_log_level(LogLevel.WARNING)
+        Logger().set_log_level(LogLevel.WARNING)
     elif args.verbose == 1:
-        set_log_level(LogLevel.INFO)
+        Logger().set_log_level(LogLevel.INFO)
     else:  # args.verbose >= 2
-        set_log_level(LogLevel.DEBUG)
+        Logger().set_log_level(LogLevel.DEBUG)
 
     if args.command is None:
         parser.print_help()
         return 0
 
-    logger = get_logger()
+    logger = Logger()
 
     with Database() as db:
         db.init_db()
