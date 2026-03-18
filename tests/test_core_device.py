@@ -1,12 +1,15 @@
 """Unit tests for the DeviceCore."""
 
 import pytest
+from sqlalchemy import select
 
 from wattweight.core.device import (
     DeviceCore,
     DeviceAlreadyExistsError,
     DeviceNotFoundError,
 )
+from wattweight.core.measurement import MeasurementCore
+from wattweight.model.measurement import Measurement
 
 
 def test_add_device():
@@ -116,6 +119,28 @@ def test_delete_device():
 
     with pytest.raises(DeviceNotFoundError):
         device_core.get_device_by_identifier("test-device")
+
+
+def test_delete_device_with_measurements():
+    """Test deleting a device with measurements."""
+    device_core = DeviceCore()
+    measurement_core = MeasurementCore()
+    device = device_core.add_device(identifier="test-device", name="Test Device")
+
+    measurement_core.add_measurement(value=100.0, device=device)
+    measurement_core.add_measurement(value=110.0, device=device)
+
+    device2 = device_core.add_device(identifier="test-device2", name="Test Device2")
+    measurement_core.add_measurement(value=110.0, device=device2)
+
+    device_core.delete_device("test-device")
+
+    with pytest.raises(DeviceNotFoundError):
+        device_core.get_device_by_identifier("test-device")
+
+    measurements = device_core.db.exec(select(Measurement)).all()
+
+    assert len(measurements) == 1
 
 
 def test_delete_device_not_found():
