@@ -49,6 +49,12 @@ class DeviceCommand(BaseCommand):
             default=2.0,
             help="Idle power consumption in watts (default: 2.0)",
         )
+        add_parser.add_argument(
+            "--measurement-unit",
+            choices=["watts", "watts_hours"],
+            default="watts",
+            help="Measurement unit for the device (default: watts)",
+        )
 
         # List subcommand
         device_subparsers.add_parser("list", help="List all devices")
@@ -63,6 +69,11 @@ class DeviceCommand(BaseCommand):
         )
         modify_parser.add_argument(
             "--idle-power", type=float, help="New idle power consumption in watts"
+        )
+        modify_parser.add_argument(
+            "--measurement-unit",
+            choices=["watts", "watts_hours"],
+            help="New measurement unit for the device",
         )
 
         # Remove subcommand
@@ -91,6 +102,7 @@ class DeviceCommand(BaseCommand):
                 args.description,
                 args.idle_timeout,
                 args.idle_power,
+                args.measurement_unit,
             )
         elif args.device_action == "list":
             return self._list_devices()
@@ -101,6 +113,7 @@ class DeviceCommand(BaseCommand):
                 args.description,
                 args.idle_timeout,
                 args.idle_power,
+                args.measurement_unit,
             )
         elif args.device_action == "remove":
             return self._remove_device(args.identifier)
@@ -115,6 +128,7 @@ class DeviceCommand(BaseCommand):
         description: Optional[str] = None,
         idle_timeout: int = 20 * 60,
         idle_power: float = 2.0,
+        measurement_unit: str = "watts",
     ) -> int:
         """Add a new device.
 
@@ -124,7 +138,7 @@ class DeviceCommand(BaseCommand):
             description: Device description (optional)
             idle_timeout: Idle timeout in seconds
             idle_power: Idle power in watts
-
+            measurement_unit: Measurement unit for the device
         Returns:
             Exit code
         """
@@ -138,6 +152,7 @@ class DeviceCommand(BaseCommand):
                 description=description,
                 idle_timeout=idle_timeout,
                 idle_power=idle_power,
+                measurement_unit=measurement_unit,
             )
             return 0
 
@@ -172,6 +187,7 @@ class DeviceCommand(BaseCommand):
                 "Idle Timeout (s)",
                 "Idle Power (W)",
                 "State",
+                "Unit",
                 "Measuring State",
             ]
             data = [
@@ -182,6 +198,7 @@ class DeviceCommand(BaseCommand):
                     device.idle_timeout,
                     device.idle_power,
                     device.state.value,
+                    device.measurement_unit.value,
                     device.measuring_state.value,
                 ]
                 for device in devices
@@ -204,6 +221,7 @@ class DeviceCommand(BaseCommand):
         description: Optional[str] = None,
         idle_timeout: Optional[int] = None,
         idle_power: Optional[float] = None,
+        measurement_unit: Optional[str] = None,
     ) -> int:
         """Modify a device.
 
@@ -213,6 +231,7 @@ class DeviceCommand(BaseCommand):
             description: New device description (optional)
             idle_timeout: New idle timeout in seconds (optional)
             idle_power: New idle power in watts (optional)
+            measurement_unit: New measurement unit (optional)
 
         Returns:
             Exit code
@@ -227,6 +246,7 @@ class DeviceCommand(BaseCommand):
                 description=description,
                 idle_timeout=idle_timeout,
                 idle_power=idle_power,
+                measurement_unit=measurement_unit,
             )
             return 0
 

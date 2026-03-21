@@ -62,6 +62,7 @@ def test_add_device_success(mock_device_core, device_command: DeviceCommand):
         description="A test device",
         idle_timeout=1200,
         idle_power=2.0,
+        measurement_unit="watts",
     )
     result = device_command.execute(args)
     assert result == 0
@@ -71,6 +72,7 @@ def test_add_device_success(mock_device_core, device_command: DeviceCommand):
         description="A test device",
         idle_timeout=1200,
         idle_power=2.0,
+        measurement_unit="watts",
     )
 
 
@@ -89,6 +91,7 @@ def test_add_device_already_exists(
         description="A test device",
         idle_timeout=1200,
         idle_power=2.0,
+        measurement_unit="watts",
     )
     result = device_command.execute(args)
     assert result == 1
@@ -108,6 +111,7 @@ def test_add_device_exception(
         description="A test device",
         idle_timeout=1200,
         idle_power=2.0,
+        measurement_unit="watts",
     )
     result = device_command.execute(args)
     assert result == 1
@@ -136,6 +140,7 @@ def test_list_devices(mock_device_core, device_command: DeviceCommand, logger: L
     mock_device.idle_timeout = 1200
     mock_device.idle_power = 2.0
     mock_device.state.value = "Off"
+    mock_device.measurement_unit.value = "watts"
     mock_device.measuring_state.value = "NotMeasuring"
 
     mock_device_core.return_value.get_all_devices.return_value = [mock_device]
@@ -171,6 +176,7 @@ def test_modify_device_success(
         description="New Description",
         idle_timeout=600,
         idle_power=1.0,
+        measurement_unit="watts",
     )
     result = device_command.execute(args)
     assert result == 0
@@ -180,6 +186,7 @@ def test_modify_device_success(
         description="New Description",
         idle_timeout=600,
         idle_power=1.0,
+        measurement_unit="watts",
     )
 
 
@@ -198,6 +205,7 @@ def test_modify_device_not_found(
         description=None,
         idle_timeout=None,
         idle_power=None,
+        measurement_unit=None,
     )
     result = device_command.execute(args)
     assert result == 1
@@ -219,6 +227,7 @@ def test_modify_device_value_error(
         description=None,
         idle_timeout=None,
         idle_power=None,
+        measurement_unit=None,
     )
     result = device_command.execute(args)
     assert result == 1
@@ -238,6 +247,7 @@ def test_modify_device_exception(
         description=None,
         idle_timeout=None,
         idle_power=None,
+        measurement_unit=None,
     )
     result = device_command.execute(args)
     assert result == 1

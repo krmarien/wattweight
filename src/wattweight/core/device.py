@@ -28,6 +28,7 @@ class DeviceCore(Core):
         description: Optional[str] = None,
         idle_timeout: int = 20 * 60,
         idle_power: float = 2.0,
+        measurement_unit: str = "watts",
     ) -> Device:
         """Add a new device."""
         # Check if device already exists
@@ -47,6 +48,7 @@ class DeviceCore(Core):
             description=description,
             idle_timeout=idle_timeout,
             idle_power=idle_power,
+            measurement_unit=measurement_unit,
         )
         self.db.add(device)
         self.db.commit()
@@ -79,9 +81,13 @@ class DeviceCore(Core):
         description: Optional[str] = None,
         idle_timeout: Optional[int] = None,
         idle_power: Optional[float] = None,
+        measurement_unit: Optional[str] = None,
     ) -> Device:
         """Update a device."""
-        if all(v is None for v in [name, description, idle_timeout, idle_power]):
+        if all(
+            v is None
+            for v in [name, description, idle_timeout, idle_power, measurement_unit]
+        ):
             raise ValueError("At least one field must be provided to update")
 
         device = self.db.exec(
@@ -102,6 +108,8 @@ class DeviceCore(Core):
             device.idle_timeout = idle_timeout
         if idle_power is not None:
             device.idle_power = idle_power
+        if measurement_unit is not None:
+            device.measurement_unit = measurement_unit
 
         self.db.add(device)
         self.db.commit()
