@@ -27,7 +27,7 @@ class DeviceCore(Core):
         name: str,
         description: Optional[str] = None,
         idle_timeout: int = 20 * 60,
-        idle_power: float = 2.0,
+        idle_energy_threshold: float = 2.0,
         measurement_unit: str = "watts",
     ) -> Device:
         """Add a new device."""
@@ -47,7 +47,7 @@ class DeviceCore(Core):
             name=name,
             description=description,
             idle_timeout=idle_timeout,
-            idle_power=idle_power,
+            idle_energy_threshold=idle_energy_threshold,
             measurement_unit=measurement_unit,
         )
         self.db.add(device)
@@ -80,13 +80,19 @@ class DeviceCore(Core):
         name: Optional[str] = None,
         description: Optional[str] = None,
         idle_timeout: Optional[int] = None,
-        idle_power: Optional[float] = None,
+        idle_energy_threshold: Optional[float] = None,
         measurement_unit: Optional[str] = None,
     ) -> Device:
         """Update a device."""
         if all(
             v is None
-            for v in [name, description, idle_timeout, idle_power, measurement_unit]
+            for v in [
+                name,
+                description,
+                idle_timeout,
+                idle_energy_threshold,
+                measurement_unit,
+            ]
         ):
             raise ValueError("At least one field must be provided to update")
 
@@ -106,8 +112,8 @@ class DeviceCore(Core):
             device.description = description
         if idle_timeout is not None:
             device.idle_timeout = idle_timeout
-        if idle_power is not None:
-            device.idle_power = idle_power
+        if idle_energy_threshold is not None:
+            device.idle_energy_threshold = idle_energy_threshold
         if measurement_unit is not None:
             device.measurement_unit = measurement_unit
 

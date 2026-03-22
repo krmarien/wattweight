@@ -61,7 +61,7 @@ def test_add_device_success(mock_device_core, device_command: DeviceCommand):
         name="Test Device",
         description="A test device",
         idle_timeout=1200,
-        idle_power=2.0,
+        idle_energy_threshold=2.0,
         measurement_unit="watts",
     )
     result = device_command.execute(args)
@@ -71,7 +71,7 @@ def test_add_device_success(mock_device_core, device_command: DeviceCommand):
         "Test Device",
         description="A test device",
         idle_timeout=1200,
-        idle_power=2.0,
+        idle_energy_threshold=2.0,
         measurement_unit="watts",
     )
 
@@ -90,7 +90,7 @@ def test_add_device_already_exists(
         name="Test Device",
         description="A test device",
         idle_timeout=1200,
-        idle_power=2.0,
+        idle_energy_threshold=2.0,
         measurement_unit="watts",
     )
     result = device_command.execute(args)
@@ -110,7 +110,7 @@ def test_add_device_exception(
         name="Test Device",
         description="A test device",
         idle_timeout=1200,
-        idle_power=2.0,
+        idle_energy_threshold=2.0,
         measurement_unit="watts",
     )
     result = device_command.execute(args)
@@ -138,7 +138,7 @@ def test_list_devices(mock_device_core, device_command: DeviceCommand, logger: L
     mock_device.identifier = "test"
     mock_device.name = "Test Device"
     mock_device.idle_timeout = 1200
-    mock_device.idle_power = 2.0
+    mock_device.idle_energy_threshold = 2.0
     mock_device.state.value = "Off"
     mock_device.measurement_unit.value = "watts"
     mock_device.measuring_state.value = "NotMeasuring"
@@ -175,7 +175,7 @@ def test_modify_device_success(
         name="New Name",
         description="New Description",
         idle_timeout=600,
-        idle_power=1.0,
+        idle_energy_threshold=1.0,
         measurement_unit="watts",
     )
     result = device_command.execute(args)
@@ -185,7 +185,7 @@ def test_modify_device_success(
         name="New Name",
         description="New Description",
         idle_timeout=600,
-        idle_power=1.0,
+        idle_energy_threshold=1.0,
         measurement_unit="watts",
     )
 
@@ -204,7 +204,7 @@ def test_modify_device_not_found(
         name="New Name",
         description=None,
         idle_timeout=None,
-        idle_power=None,
+        idle_energy_threshold=None,
         measurement_unit=None,
     )
     result = device_command.execute(args)
@@ -226,7 +226,7 @@ def test_modify_device_value_error(
         name="New Name",
         description=None,
         idle_timeout=None,
-        idle_power=None,
+        idle_energy_threshold=None,
         measurement_unit=None,
     )
     result = device_command.execute(args)
@@ -246,7 +246,7 @@ def test_modify_device_exception(
         name="New Name",
         description=None,
         idle_timeout=None,
-        idle_power=None,
+        idle_energy_threshold=None,
         measurement_unit=None,
     )
     result = device_command.execute(args)

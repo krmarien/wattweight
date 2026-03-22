@@ -44,16 +44,16 @@ class DeviceCommand(BaseCommand):
             help="Idle timeout in seconds (default: 1200)",
         )
         add_parser.add_argument(
-            "--idle-power",
+            "--idle-energy-threshold",
             type=float,
             default=2.0,
-            help="Idle power consumption in watts (default: 2.0)",
+            help="Idle energy threshold in watthours (default: 2.0)",
         )
         add_parser.add_argument(
             "--measurement-unit",
-            choices=["watts", "watts_hours"],
-            default="watts",
-            help="Measurement unit for the device (default: watts)",
+            choices=["watts", "watt_hours"],
+            default="watt_hours",
+            help="Measurement unit for the device (default: watt_hours)",
         )
 
         # List subcommand
@@ -68,11 +68,13 @@ class DeviceCommand(BaseCommand):
             "--idle-timeout", type=int, help="New idle timeout in seconds"
         )
         modify_parser.add_argument(
-            "--idle-power", type=float, help="New idle power consumption in watts"
+            "--idle-energy-threshold",
+            type=float,
+            help="New idle energy threshold in watthours",
         )
         modify_parser.add_argument(
             "--measurement-unit",
-            choices=["watts", "watts_hours"],
+            choices=["watts", "watt_hours"],
             help="New measurement unit for the device",
         )
 
@@ -101,7 +103,7 @@ class DeviceCommand(BaseCommand):
                 args.name,
                 args.description,
                 args.idle_timeout,
-                args.idle_power,
+                args.idle_energy_threshold,
                 args.measurement_unit,
             )
         elif args.device_action == "list":
@@ -112,7 +114,7 @@ class DeviceCommand(BaseCommand):
                 args.name,
                 args.description,
                 args.idle_timeout,
-                args.idle_power,
+                args.idle_energy_threshold,
                 args.measurement_unit,
             )
         elif args.device_action == "remove":
@@ -127,7 +129,7 @@ class DeviceCommand(BaseCommand):
         name: str,
         description: Optional[str] = None,
         idle_timeout: int = 20 * 60,
-        idle_power: float = 2.0,
+        idle_energy_threshold: float = 2.0,
         measurement_unit: str = "watts",
     ) -> int:
         """Add a new device.
@@ -137,7 +139,7 @@ class DeviceCommand(BaseCommand):
             name: Device name
             description: Device description (optional)
             idle_timeout: Idle timeout in seconds
-            idle_power: Idle power in watts
+            idle_energy_threshold: Idle energy threshold in watthours
             measurement_unit: Measurement unit for the device
         Returns:
             Exit code
@@ -151,7 +153,7 @@ class DeviceCommand(BaseCommand):
                 name,
                 description=description,
                 idle_timeout=idle_timeout,
-                idle_power=idle_power,
+                idle_energy_threshold=idle_energy_threshold,
                 measurement_unit=measurement_unit,
             )
             return 0
@@ -185,7 +187,7 @@ class DeviceCommand(BaseCommand):
                 "Identifier",
                 "Name",
                 "Idle Timeout (s)",
-                "Idle Power (W)",
+                "Idle Energy Threshold (Wh)",
                 "State",
                 "Unit",
                 "Measuring State",
@@ -196,7 +198,7 @@ class DeviceCommand(BaseCommand):
                     device.identifier,
                     device.name,
                     device.idle_timeout,
-                    device.idle_power,
+                    device.idle_energy_threshold,
                     device.state.value,
                     device.measurement_unit.value,
                     device.measuring_state.value,
@@ -220,7 +222,7 @@ class DeviceCommand(BaseCommand):
         name: Optional[str] = None,
         description: Optional[str] = None,
         idle_timeout: Optional[int] = None,
-        idle_power: Optional[float] = None,
+        idle_energy_threshold: Optional[float] = None,
         measurement_unit: Optional[str] = None,
     ) -> int:
         """Modify a device.
@@ -230,7 +232,7 @@ class DeviceCommand(BaseCommand):
             name: New device name (optional)
             description: New device description (optional)
             idle_timeout: New idle timeout in seconds (optional)
-            idle_power: New idle power in watts (optional)
+            idle_energy_threshold: New idle energy threshold in watthours (optional)
             measurement_unit: New measurement unit (optional)
 
         Returns:
@@ -245,7 +247,7 @@ class DeviceCommand(BaseCommand):
                 name=name,
                 description=description,
                 idle_timeout=idle_timeout,
-                idle_power=idle_power,
+                idle_energy_threshold=idle_energy_threshold,
                 measurement_unit=measurement_unit,
             )
             return 0

@@ -6,7 +6,7 @@ from sqlmodel import select
 from wattweight.core.base import Core
 from wattweight.core.device_state import DeviceStateService
 from wattweight.model import Measurement
-from wattweight.model.device import Device, DeviceMeasuringState
+from wattweight.model.device import Device
 
 
 class MeasurementCore(Core):
@@ -19,7 +19,6 @@ class MeasurementCore(Core):
         timestamp: Optional[datetime] = None,
     ) -> Measurement:
         """Add a new measurement."""
-        device.measuring_state = DeviceMeasuringState.MEASURING
 
         # Create and add measurement
         measurement = Measurement(

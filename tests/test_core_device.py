@@ -100,14 +100,16 @@ def test_update_device_idle_timeout():
     assert updated_device.idle_timeout == 200
 
 
-def test_update_device_idle_power():
-    """Test updating only the idle_power of a device."""
+def test_update_device_idle_energy_threshold():
+    """Test updating only the idle_energy_threshold of a device."""
     device_core = DeviceCore()
-    device_core.add_device(identifier="test-device", name="Test Device", idle_power=5.0)
-    updated_device = device_core.update_device(
-        identifier="test-device", idle_power=10.0
+    device_core.add_device(
+        identifier="test-device", name="Test Device", idle_energy_threshold=5.0
     )
-    assert updated_device.idle_power == 10.0
+    updated_device = device_core.update_device(
+        identifier="test-device", idle_energy_threshold=10.0
+    )
+    assert updated_device.idle_energy_threshold == 10.0
 
 
 def test_delete_device():

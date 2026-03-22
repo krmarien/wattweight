@@ -18,7 +18,7 @@ class DeviceMeasuringState(str, Enum):
 
 class DeviceMeasurementUnit(str, Enum):
     WATTS = "watts"
-    WATTS_HOURS = "watts_hours"
+    WATT_HOURS = "watt_hours"
 
 
 class Device(SQLModel, table=True):
@@ -27,8 +27,8 @@ class Device(SQLModel, table=True):
     name: str
     description: Optional[str] = None
     idle_timeout: int = 20 * 60  # Default idle timeout in seconds (20 minutes)
-    idle_power: float = 2.0  # Power consumption when idle (in watts)
-    measurement_unit: DeviceMeasurementUnit = DeviceMeasurementUnit.WATTS
+    idle_energy_threshold: float = 2.0  # Power consumption when idle (in watthours)
+    measurement_unit: DeviceMeasurementUnit = DeviceMeasurementUnit.WATT_HOURS
     state: DeviceState = DeviceState.UNKNOWN
     measuring_state: DeviceMeasuringState = DeviceMeasuringState.NOT_MEASURING
 
