@@ -89,14 +89,41 @@ class DeviceStateService:
     @staticmethod
     def get_energy_for_measurements(device: Device, measurements: list[Measurement]):
         if device.measurement_unit == DeviceMeasurementUnit.WATTS:
-            return []
+            # 1. Convert your list of SQLModel objects to a list of dictionaries
+            data = [m.model_dump() for m in measurements]
+            df = pd.DataFrame(data)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
+            df = df.sort_values("timestamp")
+
+            # 2. Calculate the time gap between readings in hours
+            # .diff() gives a Timedelta; .dt.total_seconds() / 3600 converts to hours
+            df["hours_passed"] = df["timestamp"].diff().dt.total_seconds() / 3600
+
+            # 3. Calculate Average Power for the interval
+            # Average the Power (W) of the current and previous reading
+            df["avg_power"] = (df["value"] + df["value"].shift(1)) / 2
+
+            # 4. Energy (Wh) = Power (W) * Time (h)
+            df["energy_delta"] = df["avg_power"] * df["hours_passed"]
+
+            # Because the first entry of a diff() is always NaN,
+            # we drop it and return the rest as a list of energy deltas.
+            return df["energy_delta"].dropna().tolist()
         else:
+            # 1. Convert your list of SQLModel objects to a list of dictionaries
             data = [m.model_dump() for m in measurements]
             df = pd.DataFrame(data)
 
+            # 2. Convert Unix integer to readable Datetime
+            # unit='s' if it's seconds, 'ms' if milliseconds
             df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
 
+            # 3. Sort to ensure chronological order
             df = df.sort_values("timestamp")
 
+            # 4. Calculate the energy per timestep (delta)
             df["energy_delta"] = df["value"].diff()
-            return []
+
+            # Because the first entry of a diff() is always NaN,
+            # we drop it and return the rest as a list of energy deltas.
+            return df["energy_delta"].dropna().tolist()
