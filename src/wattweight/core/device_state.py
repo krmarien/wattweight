@@ -44,7 +44,7 @@ class DeviceStateService:
             return
 
         # Update device average power
-        # TODO
+        DeviceStateService.update_average_power(device)
 
         # Remove all measurements for this device
         for measurement in device.measurements:
