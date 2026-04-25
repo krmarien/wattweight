@@ -12,6 +12,8 @@ from wattweight.model.device import Device, DeviceMeasuringState, DeviceMeasurem
 
 
 class DeviceStateService:
+    SAMPLE_FREQUENCY_MINUTES = 5
+
     @staticmethod
     def update_state(device: Device):
         """Update the state of a device based on its last measurement time and idle
@@ -68,6 +70,7 @@ class DeviceStateService:
             .order_by(Measurement.timestamp.asc())
         ).all()
 
+        # TODO: Use the calculated energy
         _ = DeviceStateService.get_energy_for_measurements(device, idle_measurements)
 
         if len(idle_measurements) > 0:
@@ -88,42 +91,68 @@ class DeviceStateService:
 
     @staticmethod
     def get_energy_for_measurements(device: Device, measurements: list[Measurement]):
+        if not measurements:
+            return []
+
+        # 1. Convert list of SQLModel objects to a list of dictionaries
+        data = [m.model_dump() for m in measurements]
+        df = pd.DataFrame(data)
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
+        df = df.sort_values("timestamp")
+
         if device.measurement_unit == DeviceMeasurementUnit.WATTS:
-            # 1. Convert your list of SQLModel objects to a list of dictionaries
-            data = [m.model_dump() for m in measurements]
-            df = pd.DataFrame(data)
-            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
-            df = df.sort_values("timestamp")
-
-            # 2. Calculate the time gap between readings in hours
-            # .diff() gives a Timedelta; .dt.total_seconds() / 3600 converts to hours
+            # Calculate cumulative energy from power using trapezoidal rule
             df["hours_passed"] = df["timestamp"].diff().dt.total_seconds() / 3600
-
-            # 3. Calculate Average Power for the interval
-            # Average the Power (W) of the current and previous reading
             df["avg_power"] = (df["value"] + df["value"].shift(1)) / 2
-
-            # 4. Energy (Wh) = Power (W) * Time (h)
-            df["energy_delta"] = df["avg_power"] * df["hours_passed"]
-
-            # Because the first entry of a diff() is always NaN,
-            # we drop it and return the rest as a list of energy deltas.
-            return df["energy_delta"].dropna().tolist()
+            df["energy_segment"] = df["avg_power"] * df["hours_passed"]
+            df["cumulative_energy"] = df["energy_segment"].fillna(0).cumsum()
         else:
-            # 1. Convert your list of SQLModel objects to a list of dictionaries
-            data = [m.model_dump() for m in measurements]
-            df = pd.DataFrame(data)
+            # WATT_HOURS is already cumulative
+            df["cumulative_energy"] = df["value"]
 
-            # 2. Convert Unix integer to readable Datetime
-            # unit='s' if it's seconds, 'ms' if milliseconds
-            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
+        # 2. Resample cumulative energy to 5-minute intervals
+        df = df.set_index("timestamp")
+        # Handle duplicate timestamps by keeping the first
+        df = df[~df.index.duplicated(keep="first")]
 
-            # 3. Sort to ensure chronological order
-            df = df.sort_values("timestamp")
+        if df.empty:
+            return []
 
-            # 4. Calculate the energy per timestep (delta)
-            df["energy_delta"] = df["value"].diff()
+        # Define the target 5-minute grid
+        start = df.index.min().floor(
+            f"{DeviceStateService.SAMPLE_FREQUENCY_MINUTES}min"
+        )
+        end = df.index.max().ceil(f"{DeviceStateService.SAMPLE_FREQUENCY_MINUTES}min")
+        grid = pd.date_range(
+            start=start,
+            end=end,
+            freq=f"{DeviceStateService.SAMPLE_FREQUENCY_MINUTES}min",
+        )
 
-            # Because the first entry of a diff() is always NaN,
-            # we drop it and return the rest as a list of energy deltas.
-            return df["energy_delta"].dropna().tolist()
+        # Combine original timestamps with grid
+        combined_index = df.index.union(grid).sort_values()
+
+        # Reindex and interpolate cumulative energy
+        cumulative = (
+            df["cumulative_energy"].reindex(combined_index).interpolate(method="time")
+        )
+
+        # Fill boundaries to cover the full grid
+        cumulative = cumulative.bfill().ffill()
+
+        # Select only the grid points and calculate diff
+        resampled = cumulative.loc[grid]
+        energy_intervals = resampled.diff().dropna()
+
+        # Return as list of dictionaries with interval start time
+        result = []
+        for ts, value in energy_intervals.items():
+            result.append(
+                {
+                    "timestamp": ts
+                    - pd.Timedelta(minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES),
+                    "value": value,
+                }
+            )
+
+        return result
