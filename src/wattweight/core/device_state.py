@@ -70,12 +70,19 @@ class DeviceStateService:
             .order_by(Measurement.timestamp.asc())
         ).all()
 
-        # TODO: Use the calculated energy
-        _ = DeviceStateService.get_energy_for_measurements(device, idle_measurements)
+        energy = DeviceStateService.get_energy_for_measurements(
+            device, idle_measurements
+        )
 
-        if len(idle_measurements) > 0:
+        if len(idle_measurements) == 1:
+            logger.debug(
+                f"Device {device.identifier} has only one measurement in the last"
+                f"{device.idle_timeout} seconds, treating as idle."
+            )
+            return False
+        elif len(idle_measurements) > 1:
             above_threshold = [
-                m for m in idle_measurements if m.value > device.idle_energy_threshold
+                m for m in energy if m["value"] > device.idle_energy_threshold
             ]
             logger.debug(
                 f"Device {device.identifier} has {len(above_threshold)} measurements"

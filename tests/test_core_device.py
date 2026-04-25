@@ -2,6 +2,7 @@
 
 import pytest
 from sqlalchemy import select
+from datetime import datetime, timedelta, timezone
 
 from wattweight.core.device import (
     DeviceCore,
@@ -129,8 +130,16 @@ def test_delete_device_with_measurements():
     measurement_core = MeasurementCore()
     device = device_core.add_device(identifier="test-device", name="Test Device")
 
-    measurement_core.add_measurement(value=100.0, device=device)
-    measurement_core.add_measurement(value=110.0, device=device)
+    measurement_core.add_measurement(
+        value=100.0,
+        device=device,
+        timestamp=datetime.now(timezone.utc) - timedelta(minutes=5),
+    )
+    measurement_core.add_measurement(
+        value=150.0,
+        device=device,
+        timestamp=datetime.now(timezone.utc) - timedelta(minutes=3),
+    )
 
     device2 = device_core.add_device(identifier="test-device2", name="Test Device2")
     measurement_core.add_measurement(value=110.0, device=device2)

@@ -1,6 +1,7 @@
 """Unit tests for the MeasurementCore."""
 
 import pytest
+from datetime import datetime, timedelta, timezone
 
 from wattweight.core.device import DeviceCore
 from wattweight.core.measurement import MeasurementCore
@@ -33,8 +34,16 @@ def test_add_measurement(device: Device):
 def test_get_measurements(device: Device):
     """Test getting all measurements for a device."""
     measurement_core = MeasurementCore()
-    measurement_core.add_measurement(value=100.0, device=device)
-    measurement_core.add_measurement(value=110.0, device=device)
+    measurement_core.add_measurement(
+        value=100.0,
+        device=device,
+        timestamp=datetime.now(timezone.utc) - timedelta(minutes=5),
+    )
+    measurement_core.add_measurement(
+        value=110.0,
+        device=device,
+        timestamp=datetime.now(timezone.utc) - timedelta(minutes=10),
+    )
 
     measurements = measurement_core.get_measurements(device)
     assert len(measurements) == 2
