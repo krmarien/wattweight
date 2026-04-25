@@ -67,7 +67,10 @@ def test_update_device():
     _ = device_core.add_device(identifier="test-device", name="Test Device")
 
     updated_device = device_core.update_device(
-        identifier="test-device", name="Updated Name", description="Updated Description"
+        identifier="test-device",
+        name="Updated Name",
+        description="Updated Description",
+        measurement_unit="WATT_HOURS",
     )
 
     assert updated_device.name == "Updated Name"

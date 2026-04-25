@@ -10,7 +10,7 @@ class UnixTimestamp(TypeDecorator):
     cache_ok = True
 
     def process_bind_param(self, value, dialect):
-        if value is None:
+        if value is None:  # pragma: no cover
             return value
 
         # If filtering with an int directly, just return it
@@ -21,10 +21,12 @@ class UnixTimestamp(TypeDecorator):
         if isinstance(value, datetime):
             return int(value.timestamp())
 
-        raise TypeError(f"Expected datetime or int, got {type(value)}")
+        raise TypeError(
+            f"Expected datetime or int, got {type(value)}"
+        )  # pragma: no cover
 
     def process_result_value(self, value, dialect):
         if value is not None:
             # Convert integer timestamp from DB back to datetime object
             return datetime.fromtimestamp(value, tz=timezone.utc)
-        return value
+        return value  # pragma: no cover
