@@ -1,16 +1,17 @@
 """Device State Service core business logic."""
 
-from datetime import timezone, datetime
-import pandas as pd
+from datetime import datetime, timezone
 from itertools import zip_longest
+from typing import Sequence
 
-from sqlmodel import select
+import pandas as pd
+from sqlmodel import asc, desc, select
 
 from wattweight.database import Database
-from wattweight.model.measurement import Measurement
-from wattweight.model.average_usage import AverageUsage
 from wattweight.logger import Logger
-from wattweight.model.device import Device, DeviceMeasuringState, DeviceMeasurementUnit
+from wattweight.model.average_usage import AverageUsage
+from wattweight.model.device import Device, DeviceMeasurementUnit, DeviceMeasuringState
+from wattweight.model.measurement import Measurement
 
 
 class DeviceStateService:
@@ -18,7 +19,7 @@ class DeviceStateService:
     AVERAGE_USAGE_WEIGHT = 0.9
 
     @staticmethod
-    def update_state(device: Device):
+    def update_state(device: Device) -> None:
         """Update the state of a device based on its last measurement time and idle
             timeout.
 
@@ -54,12 +55,18 @@ class DeviceStateService:
             db.delete(measurement)
 
         device.measuring_state = DeviceMeasuringState.NOT_MEASURING
+        db.add(device)
         db.commit()
 
     @staticmethod
-    def is_device_idle(device: Device):
+    def is_device_idle(device: Device) -> bool:
         db = Database().get_session()
         logger = Logger()
+
+        threshold_dt = datetime.fromtimestamp(
+            int(datetime.now(timezone.utc).timestamp()) - device.idle_timeout,
+            tz=timezone.utc,
+        )
 
         # Get measurements for this device in the last device.idle_timeout seconds
         # and check the are about the device.idle_threshold
@@ -67,10 +74,9 @@ class DeviceStateService:
             select(Measurement)
             .where(
                 Measurement.device_id == device.id,
-                Measurement.timestamp
-                > int(datetime.now(timezone.utc).timestamp()) - device.idle_timeout,
+                Measurement.timestamp > threshold_dt,
             )
-            .order_by(Measurement.timestamp.asc())
+            .order_by(asc(Measurement.timestamp))
         ).all()
 
         energy = DeviceStateService.get_energy_for_measurements(
@@ -80,7 +86,7 @@ class DeviceStateService:
         if len(idle_measurements) == 1:
             logger.debug(
                 f"Device {device.identifier} has only one measurement in the last"
-                f"{device.idle_timeout} seconds, treating as idle."
+                f"{device.idle_timeout} seconds, treating as not idle."
             )
             return False
         elif len(idle_measurements) > 1:
@@ -100,7 +106,7 @@ class DeviceStateService:
             return True
 
     @staticmethod
-    def update_average_energy(device: Device):
+    def update_average_energy(device: Device) -> None:
         db = Database().get_session()
         logger = Logger()
 
@@ -108,7 +114,7 @@ class DeviceStateService:
         measurements = db.exec(
             select(Measurement)
             .where(Measurement.device_id == device.id)
-            .order_by(Measurement.timestamp.asc())
+            .order_by(asc(Measurement.timestamp))
         ).all()
 
         logger.debug(
@@ -123,7 +129,7 @@ class DeviceStateService:
             .where(
                 AverageUsage.device_id == device.id,
             )
-            .order_by(AverageUsage.timestamp.desc())
+            .order_by(desc(AverageUsage.timestamp))
         ).all()
 
         for energy_entry, average_usage_entry in zip_longest(
@@ -149,7 +155,9 @@ class DeviceStateService:
         db.commit()
 
     @staticmethod
-    def get_energy_for_measurements(device: Device, measurements: list[Measurement]):
+    def get_energy_for_measurements(
+        device: Device, measurements: Sequence[Measurement]
+    ) -> list[dict[str, int | float]]:
         if not measurements:
             return []  # pragma: no cover
 
@@ -205,6 +213,8 @@ class DeviceStateService:
         result = []
         start_time = df.index.min()
         for ts, value in energy_intervals.items():
+            assert isinstance(ts, pd.Timestamp)
+
             result.append(
                 {
                     "timestamp": int(

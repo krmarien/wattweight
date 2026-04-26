@@ -7,20 +7,20 @@ from tabulate import tabulate
 
 from wattweight.cli.base import BaseCommand
 from wattweight.core.device import (
+    DeviceAlreadyExistsError,
     DeviceCore,
     DeviceNotFoundError,
-    DeviceAlreadyExistsError,
 )
 
 
 class DeviceCommand(BaseCommand):
     """Command for managing devices."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @classmethod
-    def register(self, subparsers: argparse._SubParsersAction) -> None:
+    def register(cls, subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
         """Register the device command and its subcommands.
 
         Args:
@@ -130,7 +130,7 @@ class DeviceCommand(BaseCommand):
         description: Optional[str] = None,
         idle_timeout: int = 20 * 60,
         idle_energy_threshold: float = 2.0,
-        measurement_unit: str = "watts",
+        measurement_unit: str = "watt_hours",
     ) -> int:
         """Add a new device.
 
@@ -209,7 +209,7 @@ class DeviceCommand(BaseCommand):
             # Print table using tabulate
             print()
             print(tabulate(data, headers=headers, tablefmt="grid"))
-            print(f"Total: {len(devices)} device(s)\\n")
+            print(f"Total: {len(devices)} device(s)")
             return 0
 
         except Exception as e:

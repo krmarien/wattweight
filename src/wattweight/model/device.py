@@ -1,11 +1,11 @@
-from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import Field, SQLModel, Relationship
 from enum import Enum
+from typing import TYPE_CHECKING, List, Optional
 
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:  # pragma: no cover
-    from .measurement import Measurement  # Only imported for type hints
     from .average_usage import AverageUsage  # Only imported for type hints
+    from .measurement import Measurement  # Only imported for type hints
 
 
 class DeviceState(str, Enum):

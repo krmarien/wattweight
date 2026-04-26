@@ -1,9 +1,10 @@
-from typing import List, Optional
+from typing import Optional, Sequence
 
 from sqlmodel import select
 
 from wattweight.core.base import Core
 from wattweight.model import Device
+from wattweight.model.device import DeviceMeasurementUnit
 
 
 class DeviceNotFoundError(Exception):
@@ -56,7 +57,7 @@ class DeviceCore(Core):
 
         return device
 
-    def get_all_devices(self) -> List[Device]:
+    def get_all_devices(self) -> Sequence[Device]:
         """Get all devices."""
         devices = self.db.exec(select(Device)).all()
         return devices
@@ -115,8 +116,7 @@ class DeviceCore(Core):
         if idle_energy_threshold is not None:
             device.idle_energy_threshold = idle_energy_threshold
         if measurement_unit is not None:
-            device.measurement_unit = measurement_unit
-
+            device.measurement_unit = DeviceMeasurementUnit[measurement_unit]
         self.db.add(device)
         self.db.commit()
         self.db.refresh(device)

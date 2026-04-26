@@ -6,18 +6,20 @@ import json
 from tabulate import tabulate
 
 from wattweight.cli.base import BaseCommand
-from wattweight.core.device import DeviceCore, DeviceNotFoundError
 from wattweight.core.average_usage import AverageUsageCore
+from wattweight.core.device import DeviceCore, DeviceNotFoundError
 
 
 class AverageUsageCommand(BaseCommand):
     """Command for managing average usage."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @classmethod
-    def register(self, subparsers: argparse._SubParsersAction) -> None:
+    def register(
+        self, subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"
+    ) -> None:
         """Register the average usage command and its subcommands.
 
         Args:
@@ -60,7 +62,7 @@ class AverageUsageCommand(BaseCommand):
         ):
             self.logger.warning(
                 "No average usage action specified. Use 'wattweight average-usage"
-                "--help'"
+                " --help'"
             )
             return 1
 
@@ -80,6 +82,7 @@ class AverageUsageCommand(BaseCommand):
         Args:
             device_identifier: Identifier of the device for which to list average
                 usage entries
+            json_output: Whether to output average usage entries in JSON format
 
         Returns:
             Exit code
@@ -101,7 +104,7 @@ class AverageUsageCommand(BaseCommand):
                 return 0
 
             if json_output:
-                data = [
+                json_data = [
                     {
                         "id": average_usage.id,
                         "timestamp": average_usage.timestamp.isoformat(),
@@ -109,18 +112,22 @@ class AverageUsageCommand(BaseCommand):
                     }
                     for average_usage in average_usages
                 ]
-                print(json.dumps(data, indent=2))
+                print(json.dumps(json_data, indent=2))
             else:
                 # Prepare table data
                 headers = ["ID", "Timestamp", "Value"]
-                data = [
-                    [average_usage.id, average_usage.timestamp, average_usage.value]
+                table_data = [
+                    [
+                        average_usage.id,
+                        average_usage.timestamp.timestamp() / 60,
+                        average_usage.value,
+                    ]
                     for average_usage in average_usages
                 ]
 
                 # Print table using tabulate
                 print()
-                print(tabulate(data, headers=headers, tablefmt="grid"))
+                print(tabulate(table_data, headers=headers, tablefmt="grid"))
                 print(f"Total: {len(average_usages)} average usage entry(s)\\n")
             return 0
 

@@ -1,4 +1,5 @@
 from sqlmodel import Session
+
 from wattweight.core.base import Core
 
 

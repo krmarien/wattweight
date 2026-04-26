@@ -1,9 +1,9 @@
 """Database migration management."""
 
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 from wattweight.core.base import Core
 from wattweight.database import Database
@@ -44,7 +44,7 @@ class MigrationCore(Core):
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Migration failed: {e.stdout}\\n{e.stderr}") from e
 
-    def create_migration(self, message: str) -> bool:
+    def create_migration(self, message: str) -> None:
         """Create a new migration.
 
         Args:
@@ -76,8 +76,7 @@ class MigrationCore(Core):
                 check=True,
             )
             print(f"Migration created: {result.stdout}")
-            return True
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f"Migration creation failed: {e.stdout}\\n{e.stderr}"
+                f"Migration creation failed: {e.stdout}\n{e.stderr}"
             ) from e

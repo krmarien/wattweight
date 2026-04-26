@@ -9,11 +9,11 @@ from wattweight.core.migration import MigrationCore
 class UpgradeCommand(BaseCommand):
     """Command for managing database upgrades and migrations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @classmethod
-    def register(self, subparsers: argparse._SubParsersAction) -> None:
+    def register(cls, subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
         """Register the upgrade command and its subcommands.
 
         Args:

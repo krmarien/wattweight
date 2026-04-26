@@ -15,11 +15,13 @@ from wattweight.core.measurement import MeasurementCore
 class MeasurementCommand(BaseCommand):
     """Command for managing measurements."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @classmethod
-    def register(self, subparsers: argparse._SubParsersAction) -> None:
+    def register(
+        cls, subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"
+    ) -> None:
         """Register the measurement command and its subcommands.
 
         Args:
@@ -63,7 +65,7 @@ class MeasurementCommand(BaseCommand):
         )
 
     def execute(self, args: argparse.Namespace) -> int:
-        """Execute the device command.
+        """Execute the measurement command.
 
         Args:
             args: Parsed command arguments
@@ -158,7 +160,7 @@ class MeasurementCommand(BaseCommand):
                 return 0
 
             if json_output:
-                data = [
+                json_data = [
                     {
                         "id": measurement.id,
                         "timestamp": measurement.timestamp.isoformat(),
@@ -166,18 +168,18 @@ class MeasurementCommand(BaseCommand):
                     }
                     for measurement in measurements
                 ]
-                print(json.dumps(data, indent=2))
+                print(json.dumps(json_data, indent=2))
             else:
                 # Prepare table data
                 headers = ["ID", "Timestamp", "Value"]
-                data = [
+                table_data = [
                     [measurement.id, measurement.timestamp, measurement.value]
                     for measurement in measurements
                 ]
 
                 # Print table using tabulate
                 print()
-                print(tabulate(data, headers=headers, tablefmt="grid"))
+                print(tabulate(table_data, headers=headers, tablefmt="grid"))
                 print(f"Total: {len(measurements)} measurements(s)\\n")
             return 0
 

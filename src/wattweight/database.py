@@ -2,11 +2,12 @@
 
 import os
 from pathlib import Path
-from typing import Optional
+from types import TracebackType
+from typing import Optional, Type
 
-from sqlmodel import SQLModel, create_engine, Session
 from sqlalchemy import Engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlmodel import Session, SQLModel, create_engine
 
 from wattweight.logger import Logger
 
@@ -15,11 +16,11 @@ class Database:
     """Database manager for wattweight."""
 
     _instance: Optional["Database"] = None
-    _session_factory: Optional[scoped_session] = None
+    _session_factory: Optional[scoped_session[Session]] = None
     _engine: Optional[Engine] = None
 
-    def __new__(cls, *args, **kwargs) -> "Database":
-        """Singleton pattern to ensure only one logger instance."""
+    def __new__(cls, *args: object, **kwargs: object) -> "Database":
+        """Singleton pattern to ensure only one database instance."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -29,7 +30,7 @@ class Database:
         in_memory: bool = False,
         db_dir: Optional[Path] = None,
         echo: bool = False,
-    ):
+    ) -> None:
         """Initialize the database manager.
 
         Args:
@@ -48,7 +49,7 @@ class Database:
                 self.db_dir = db_dir or Path(
                     os.getenv(
                         "WATTWEIGHT_DB_DIR",
-                        Path.home() / ".wattweight" / "wattweight.db",
+                        Path.home() / ".wattweight",
                     )
                 )
                 self.db_path = self.db_dir / "wattweight.db"
@@ -107,12 +108,13 @@ class Database:
             self._logger.debug("Closing database connection")
             self._engine.dispose()
             self._engine = None
+            self._instance = None
 
     def __enter__(self) -> "Database":
         """Context manager entry."""
         self.init_db()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException], traceback: Optional[TracebackType]) -> None:
         """Context manager exit."""
         self.close()

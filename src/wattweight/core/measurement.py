@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional, Sequence
 
 from sqlmodel import select
 
@@ -30,11 +30,11 @@ class MeasurementCore(Core):
         self.db.commit()
         self.db.refresh(measurement)
 
-        DeviceStateService.update_state(self.db.get(Device, device.id))
+        DeviceStateService.update_state(device)
 
         return measurement
 
-    def get_measurements(self, device: Device) -> List[Measurement]:
+    def get_measurements(self, device: Device) -> Sequence[Measurement]:
         """Get all measurements for a device by its identifier."""
         measurements = self.db.exec(
             select(Measurement).where(Measurement.device_id == device.id)

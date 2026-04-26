@@ -1,12 +1,13 @@
 """Unit tests for the DeviceCore."""
 
-import pytest
-from sqlalchemy import select
 from datetime import datetime, timedelta, timezone
 
+import pytest
+from sqlalchemy import select
+
 from wattweight.core.device import (
-    DeviceCore,
     DeviceAlreadyExistsError,
+    DeviceCore,
     DeviceNotFoundError,
 )
 from wattweight.core.measurement import MeasurementCore

@@ -1,5 +1,5 @@
-from unittest.mock import patch, MagicMock
 import subprocess
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -42,9 +42,8 @@ def test_create_migration_success(mock_subprocess_run):
     migration_core = MigrationCore()
 
     message = "test migration"
-    result = migration_core.create_migration(message)
+    migration_core.create_migration(message)
 
-    assert result is True
     mock_subprocess_run.assert_called_once()
     call_args_list = mock_subprocess_run.call_args.args[0]
     assert call_args_list[-1] == message
@@ -62,6 +61,6 @@ def test_create_migration_failure(mock_subprocess_run):
 
     with pytest.raises(RuntimeError) as context:
         migration_core.create_migration("test migration")
-    assert "Migration creation failed: Migration creation failed\\nerror" in str(
+    assert "Migration creation failed: Migration creation failed\nerror" in str(
         context.value
     )

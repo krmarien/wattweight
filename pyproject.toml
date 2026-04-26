@@ -7,7 +7,7 @@ name = "wattweight"
 version = "0.1.0"
 description = "A Python project for energy management"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 license = {text = "MIT"}
 authors = [
     {name = "Kristof Marien", email = "krmarien@gmail.com"}
@@ -18,13 +18,12 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
-    "sqlmodel",
-    "alembic",
+    "sqlmodel>=0.0.14",
+    "alembic>=1.13",
     "tabulate>=0.9.0",
     "pandas",
 ]
@@ -40,6 +39,8 @@ dev = [
     "black>=23.0",
     "flake8>=6.0",
     "mypy>=1.0",
+    "types-tabulate",
+    "pandas-stubs",
 ]
 
 [project.urls]
@@ -57,17 +58,22 @@ wattweight = ["py.typed"]
 
 [tool.black]
 line-length = 88
-target-version = ["py38"]
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
 line_length = 88
 
 [tool.mypy]
-python_version = "3.10"
+strict = true
+python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false
+warn_unreachable = true
+disallow_any_unimported = true
+disallow_any_decorated = true
+disallow_any_explicit = true
+exclude = "venv|migration|tests"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

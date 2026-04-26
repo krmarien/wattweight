@@ -2,7 +2,7 @@
 
 import logging
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 
 
 class LogLevel(Enum):
@@ -54,7 +54,7 @@ class Logger:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the logger."""
         if self._logger is None:
             self._logger = logging.getLogger("wattweight")
@@ -69,33 +69,37 @@ class Logger:
                 handler.setFormatter(formatter)
                 self._logger.addHandler(handler)
 
-    @classmethod
-    def set_level(cls, level: LogLevel) -> None:
+    def set_level(self, level: LogLevel) -> None:
         """Set the logging level.
 
         Args:
             level: The LogLevel to set
         """
-        logger = cls()
-        for handler in logger._logger.handlers:
-            handler.setLevel(level.value)
+        if self._logger is not None:
+            for handler in self._logger.handlers:
+                handler.setLevel(level.value)
 
     def debug(self, message: str) -> None:
         """Log a debug message."""
-        self._logger.debug(message)
+        if self._logger is not None:
+            self._logger.debug(message)
 
     def info(self, message: str) -> None:
         """Log an info message."""
-        self._logger.info(message)
+        if self._logger is not None:
+            self._logger.info(message)
 
     def warning(self, message: str) -> None:
         """Log a warning message."""
-        self._logger.warning(message)
+        if self._logger is not None:
+            self._logger.warning(message)
 
     def error(self, message: str) -> None:
         """Log an error message."""
-        self._logger.error(message)
+        if self._logger is not None:
+            self._logger.error(message)
 
     def critical(self, message: str) -> None:
         """Log a critical message."""
-        self._logger.critical(message)
+        if self._logger is not None:
+            self._logger.critical(message)

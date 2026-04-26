@@ -1,14 +1,16 @@
 """CLI command structure for wattweight."""
 
-from abc import ABC, abstractmethod
 import argparse
+from abc import ABC, abstractmethod
+from typing import Any
+
 from wattweight.logger import Logger
 
 
 class BaseCommand(ABC):
     """Base class for CLI commands."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the command."""
         pass
 
@@ -19,7 +21,7 @@ class BaseCommand(ABC):
 
     @classmethod
     @abstractmethod
-    def register(cls, subparsers: argparse._SubParsersAction) -> None:
+    def register(cls, subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
         """Register the command and its subcommands.
 
         Args:

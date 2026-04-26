@@ -1,7 +1,8 @@
 """Unit tests for the MeasurementCore."""
 
-import pytest
 from datetime import datetime, timedelta, timezone
+
+import pytest
 
 from wattweight.core.device import DeviceCore
 from wattweight.core.measurement import MeasurementCore
