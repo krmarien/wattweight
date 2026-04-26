@@ -1,6 +1,7 @@
 """Measurement management CLI command."""
 
 import argparse
+import json
 from datetime import datetime
 from typing import Optional
 
@@ -55,6 +56,11 @@ class MeasurementCommand(BaseCommand):
         list_parser.add_argument(
             "device_identifier", help="Device identifier for which to list measurements"
         )
+        list_parser.add_argument(
+            "--json",
+            action="store_true",
+            help="Output measurements in JSON format",
+        )
 
     def execute(self, args: argparse.Namespace) -> int:
         """Execute the device command.
@@ -78,7 +84,7 @@ class MeasurementCommand(BaseCommand):
                 getattr(args, "timestamp", None),
             )
         elif args.measurement_action == "list":
-            return self._list_measurements(args.device_identifier)
+            return self._list_measurements(args.device_identifier, args.json)
         else:
             self.logger.error(f"Unknown measurement action: {args.measurement_action}")
             return 1
@@ -125,11 +131,14 @@ class MeasurementCommand(BaseCommand):
             self.logger.error(f"Failed to add measurement: {str(e)}")
             return 1
 
-    def _list_measurements(self, device_identifier: str) -> int:
+    def _list_measurements(
+        self, device_identifier: str, json_output: bool = False
+    ) -> int:
         """List all measurements for a specific device.
 
         Args:
             device_identifier: Identifier of the device for which to list measurements
+            json_output: Whether to output measurements in JSON format
 
         Returns:
             Exit code
@@ -148,17 +157,28 @@ class MeasurementCommand(BaseCommand):
                 self.logger.warning("No measurements found")
                 return 0
 
-            # Prepare table data
-            headers = ["ID", "Timestamp", "Value"]
-            data = [
-                [measurement.id, measurement.timestamp, measurement.value]
-                for measurement in measurements
-            ]
+            if json_output:
+                data = [
+                    {
+                        "id": measurement.id,
+                        "timestamp": measurement.timestamp.isoformat(),
+                        "value": measurement.value,
+                    }
+                    for measurement in measurements
+                ]
+                print(json.dumps(data, indent=2))
+            else:
+                # Prepare table data
+                headers = ["ID", "Timestamp", "Value"]
+                data = [
+                    [measurement.id, measurement.timestamp, measurement.value]
+                    for measurement in measurements
+                ]
 
-            # Print table using tabulate
-            print()
-            print(tabulate(data, headers=headers, tablefmt="grid"))
-            print(f"Total: {len(measurements)} measurements(s)\\n")
+                # Print table using tabulate
+                print()
+                print(tabulate(data, headers=headers, tablefmt="grid"))
+                print(f"Total: {len(measurements)} measurements(s)\\n")
             return 0
 
         except DeviceNotFoundError as e:

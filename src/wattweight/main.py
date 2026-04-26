@@ -4,11 +4,12 @@ import argparse
 import sys
 from importlib.metadata import version, PackageNotFoundError
 
-from wattweight.cli.measurement import MeasurementCommand
 from wattweight.database import Database
 from wattweight.logger import Logger, LogLevel
 from wattweight.cli.device import DeviceCommand
 from wattweight.cli.upgrade import UpgradeCommand
+from wattweight.cli.measurement import MeasurementCommand
+from wattweight.cli.average_usage import AverageUsageCommand
 
 
 def get_version() -> str:
@@ -44,7 +45,7 @@ def main() -> int:
     DeviceCommand.register(subparsers)
     UpgradeCommand.register(subparsers)
     MeasurementCommand.register(subparsers)
-
+    AverageUsageCommand.register(subparsers)
     args = parser.parse_args()
 
     # Configure logging based on verbosity
@@ -74,6 +75,9 @@ def main() -> int:
                 return command.execute(args)
             elif args.command == "measurement":
                 command = MeasurementCommand()
+                return command.execute(args)
+            elif args.command == "average-usage":
+                command = AverageUsageCommand()
                 return command.execute(args)
             else:
                 logger.error(f"Unknown command: {args.command}")

@@ -136,7 +136,9 @@ def test_list_measurements_empty(
         id=1
     )
     mock_measurement_core.return_value.get_measurements.return_value = []
-    args = argparse.Namespace(measurement_action="list", device_identifier="test")
+    args = argparse.Namespace(
+        measurement_action="list", device_identifier="test", json=False
+    )
     result = measurement_command.execute(args)
     assert result == 0
     logger.warning.assert_called_with("No measurements found")
@@ -160,7 +162,9 @@ def test_list_measurements(
     mock_measurement_core.return_value.get_measurements.return_value = [
         mock_measurement
     ]
-    args = argparse.Namespace(measurement_action="list", device_identifier="test")
+    args = argparse.Namespace(
+        measurement_action="list", device_identifier="test", json=False
+    )
     with patch("builtins.print"):
         result = measurement_command.execute(args)
     assert result == 0
@@ -174,7 +178,9 @@ def test_list_measurements_device_not_found(
     mock_device_core.return_value.get_device_by_identifier.side_effect = (
         DeviceNotFoundError("Device not found")
     )
-    args = argparse.Namespace(measurement_action="list", device_identifier="test")
+    args = argparse.Namespace(
+        measurement_action="list", device_identifier="test", json=False
+    )
     result = measurement_command.execute(args)
     assert result == 1
     logger.error.assert_called_with("Device not found")
@@ -195,7 +201,9 @@ def test_list_measurements_exception(
     mock_measurement_core.return_value.get_measurements.side_effect = Exception(
         "Random error"
     )
-    args = argparse.Namespace(measurement_action="list", device_identifier="test")
+    args = argparse.Namespace(
+        measurement_action="list", device_identifier="test", json=False
+    )
     result = measurement_command.execute(args)
     assert result == 1
     logger.error.assert_called_with("Failed to list measurements: Random error")
