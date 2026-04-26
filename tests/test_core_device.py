@@ -71,7 +71,7 @@ def test_update_device():
         identifier="test-device",
         name="Updated Name",
         description="Updated Description",
-        measurement_unit="WATT_HOURS",
+        measurement_unit="watt_hours",
     )
 
     assert updated_device.name == "Updated Name"

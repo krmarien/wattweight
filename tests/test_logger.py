@@ -62,7 +62,7 @@ class TestLogger(unittest.TestCase):
             mock_warning.assert_called_once_with("warning message")
 
             logger.error("error message")
-            mock_error.assert_called_once_with("error message")
+            mock_error.assert_called_once_with("error message", exc_info=False)
 
             logger.critical("critical message")
             mock_critical.assert_called_once_with("critical message")

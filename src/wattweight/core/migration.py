@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 from wattweight.core.base import Core
 from wattweight.database import Database
@@ -14,7 +15,7 @@ class MigrationCore(Core):
 
     alembic_ini = Path(__file__).parent.parent.parent.parent / "alembic.ini"
 
-    def upgrade(self) -> bool:
+    def upgrade(self) -> Optional[bool]:
         """Upgrade the database to the latest version.
 
         Returns:
@@ -44,7 +45,7 @@ class MigrationCore(Core):
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Migration failed: {e.stdout}\\n{e.stderr}") from e
 
-    def create_migration(self, message: str) -> None:
+    def create_migration(self, message: str) -> Optional[bool]:
         """Create a new migration.
 
         Args:
@@ -76,6 +77,7 @@ class MigrationCore(Core):
                 check=True,
             )
             print(f"Migration created: {result.stdout}")
+            return True
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
                 f"Migration creation failed: {e.stdout}\n{e.stderr}"

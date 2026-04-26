@@ -30,6 +30,7 @@ class MeasurementCore(Core):
         self.db.commit()
         self.db.refresh(measurement)
 
+        self.db.refresh(device)
         DeviceStateService.update_state(device)
 
         return measurement

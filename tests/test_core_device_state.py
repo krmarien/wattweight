@@ -14,7 +14,7 @@ def test_get_energy_for_measurements_watt_hours_flat():
         identifier="test",
         measuring_state=DeviceMeasuringState.MEASURING,
         idle_timeout=60,
-        idle_threshold=10.0,
+        idle_energy_threshold=10.0,
         measurement_unit=DeviceMeasurementUnit.WATT_HOURS,
     )
     measurements = [
@@ -50,7 +50,7 @@ def test_get_energy_for_measurements_watt_hours():
         identifier="test",
         measuring_state=DeviceMeasuringState.MEASURING,
         idle_timeout=60,
-        idle_threshold=10.0,
+        idle_energy_threshold=10.0,
         measurement_unit=DeviceMeasurementUnit.WATT_HOURS,
     )
     measurements = [
@@ -89,7 +89,7 @@ def test_get_energy_for_measurements_watts():
         identifier="test",
         measuring_state=DeviceMeasuringState.MEASURING,
         idle_timeout=60,
-        idle_threshold=10.0,
+        idle_energy_threshold=10.0,
         measurement_unit=DeviceMeasurementUnit.WATTS,
     )
     measurements = [

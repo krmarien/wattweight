@@ -18,7 +18,7 @@ class AverageUsageCommand(BaseCommand):
 
     @classmethod
     def register(
-        self, subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"
+        cls, subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"
     ) -> None:
         """Register the average usage command and its subcommands.
 
@@ -115,7 +115,7 @@ class AverageUsageCommand(BaseCommand):
                 print(json.dumps(json_data, indent=2))
             else:
                 # Prepare table data
-                headers = ["ID", "Timestamp", "Value"]
+                headers = ["ID", "Minutes", "Value"]
                 table_data = [
                     [
                         average_usage.id,

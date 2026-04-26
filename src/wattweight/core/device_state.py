@@ -213,7 +213,10 @@ class DeviceStateService:
         result = []
         start_time = df.index.min()
         for ts, value in energy_intervals.items():
-            assert isinstance(ts, pd.Timestamp)
+            if not isinstance(ts, pd.Timestamp):
+                raise TypeError(
+                    f"Expected timestamp to be a pd.Timestamp, got {type(ts)}"
+                )
 
             result.append(
                 {

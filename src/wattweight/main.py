@@ -79,7 +79,7 @@ def main() -> int:
                 logger.error(f"Unknown command: {args.command}")
                 return 1
         except Exception as e:
-            logger.error(f"An unexpected error occurred: {e}")
+            logger.error(f"An unexpected error occurred: {e}", exc_info=True)
             return 1
 
 

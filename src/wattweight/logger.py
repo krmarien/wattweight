@@ -2,7 +2,7 @@
 
 import logging
 from enum import Enum
-from typing import Optional, Any
+from typing import Optional
 
 
 class LogLevel(Enum):
@@ -94,10 +94,10 @@ class Logger:
         if self._logger is not None:
             self._logger.warning(message)
 
-    def error(self, message: str) -> None:
+    def error(self, message: str, exc_info: bool = False) -> None:
         """Log an error message."""
         if self._logger is not None:
-            self._logger.error(message)
+            self._logger.error(message, exc_info=exc_info)
 
     def critical(self, message: str) -> None:
         """Log a critical message."""

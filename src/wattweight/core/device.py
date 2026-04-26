@@ -116,7 +116,7 @@ class DeviceCore(Core):
         if idle_energy_threshold is not None:
             device.idle_energy_threshold = idle_energy_threshold
         if measurement_unit is not None:
-            device.measurement_unit = DeviceMeasurementUnit[measurement_unit]
+            device.measurement_unit = DeviceMeasurementUnit(measurement_unit)
         self.db.add(device)
         self.db.commit()
         self.db.refresh(device)
