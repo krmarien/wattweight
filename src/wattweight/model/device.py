@@ -2,8 +2,10 @@ from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship
 from enum import Enum
 
+
 if TYPE_CHECKING:  # pragma: no cover
     from .measurement import Measurement  # Only imported for type hints
+    from .average_usage import AverageUsage  # Only imported for type hints
 
 
 class DeviceState(str, Enum):
@@ -33,3 +35,4 @@ class Device(SQLModel, table=True):
     measuring_state: DeviceMeasuringState = DeviceMeasuringState.NOT_MEASURING
 
     measurements: List["Measurement"] = Relationship(back_populates="device")
+    average_usage: List["AverageUsage"] = Relationship(back_populates="device")

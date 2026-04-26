@@ -2,17 +2,20 @@
 
 from datetime import timezone, datetime
 import pandas as pd
+from itertools import zip_longest
 
 from sqlmodel import select
 
 from wattweight.database import Database
 from wattweight.model.measurement import Measurement
+from wattweight.model.average_usage import AverageUsage
 from wattweight.logger import Logger
 from wattweight.model.device import Device, DeviceMeasuringState, DeviceMeasurementUnit
 
 
 class DeviceStateService:
     SAMPLE_FREQUENCY_MINUTES = 5
+    AVERAGE_USAGE_WEIGHT = 0.9
 
     @staticmethod
     def update_state(device: Device):
@@ -43,8 +46,8 @@ class DeviceStateService:
             )
             return
 
-        # Update device average power
-        DeviceStateService.update_average_power(device)
+        # Update device average energy
+        DeviceStateService.update_average_energy(device)
 
         # Remove all measurements for this device
         for measurement in device.measurements:
@@ -97,6 +100,55 @@ class DeviceStateService:
             return True
 
     @staticmethod
+    def update_average_energy(device: Device):
+        db = Database().get_session()
+        logger = Logger()
+
+        # Get all the measurements for this device
+        measurements = db.exec(
+            select(Measurement)
+            .where(Measurement.device_id == device.id)
+            .order_by(Measurement.timestamp.asc())
+        ).all()
+
+        logger.debug(
+            f"Device {device.identifier} has {len(measurements)} measurement in total"
+        )
+
+        energy = DeviceStateService.get_energy_for_measurements(device, measurements)
+
+        # Get current average usage for this device
+        current_average_usage = db.exec(
+            select(AverageUsage)
+            .where(
+                AverageUsage.device_id == device.id,
+            )
+            .order_by(AverageUsage.timestamp.desc())
+        ).all()
+
+        for energy_entry, average_usage_entry in zip_longest(
+            energy, current_average_usage
+        ):
+            if average_usage_entry is not None and energy_entry is not None:
+                # Update existing average usage entry
+                average_usage_entry.value = (
+                    average_usage_entry.value * DeviceStateService.AVERAGE_USAGE_WEIGHT
+                    + energy_entry["value"]
+                    * (1 - DeviceStateService.AVERAGE_USAGE_WEIGHT)
+                )
+                db.add(average_usage_entry)
+            elif energy_entry is not None:
+                # Create new average usage entry
+                average_usage = AverageUsage(
+                    device_id=device.id,
+                    timestamp=energy_entry["timestamp"],
+                    value=energy_entry["value"],
+                )
+                db.add(average_usage)
+
+        db.commit()
+
+    @staticmethod
     def get_energy_for_measurements(device: Device, measurements: list[Measurement]):
         if not measurements:
             return []  # pragma: no cover
@@ -126,9 +178,7 @@ class DeviceStateService:
             return []  # pragma: no cover
 
         # Define the target 5-minute grid
-        start = df.index.min().floor(
-            f"{DeviceStateService.SAMPLE_FREQUENCY_MINUTES}min"
-        )
+        start = df.index.min()
         end = df.index.max().ceil(f"{DeviceStateService.SAMPLE_FREQUENCY_MINUTES}min")
         grid = pd.date_range(
             start=start,
@@ -153,11 +203,19 @@ class DeviceStateService:
 
         # Return as list of dictionaries with interval start time
         result = []
+        start_time = df.index.min()
         for ts, value in energy_intervals.items():
             result.append(
                 {
-                    "timestamp": ts
-                    - pd.Timedelta(minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES),
+                    "timestamp": int(
+                        (
+                            ts
+                            - pd.Timedelta(
+                                minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+                            )
+                            - start_time
+                        ).total_seconds()
+                    ),
                     "value": value,
                 }
             )

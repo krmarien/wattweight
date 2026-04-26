@@ -32,10 +32,13 @@ def test_get_energy_for_measurements_watt_hours_flat():
         ),
     ]
     energy = DeviceStateService.get_energy_for_measurements(device, measurements)
-    assert len(energy) == 10 / DeviceStateService.SAMPLE_FREQUENCY_MINUTES + 1
-    for i in range(len(energy) - 2):
-        assert energy[i + 1]["timestamp"] - energy[i]["timestamp"] == timedelta(
-            minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+    assert len(energy) == 10 / DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+    for i in range(len(energy) - 1):
+        assert (
+            energy[i + 1]["timestamp"] - energy[i]["timestamp"]
+            == timedelta(
+                minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+            ).total_seconds()
         )
     assert sum([x["value"] for x in energy]) == pytest.approx(50)
 
@@ -68,10 +71,13 @@ def test_get_energy_for_measurements_watt_hours():
         ),
     ]
     energy = DeviceStateService.get_energy_for_measurements(device, measurements)
-    assert len(energy) == 60 / DeviceStateService.SAMPLE_FREQUENCY_MINUTES + 1
-    for i in range(len(energy) - 2):
-        assert energy[i + 1]["timestamp"] - energy[i]["timestamp"] == timedelta(
-            minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+    assert len(energy) == 60 / DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+    for i in range(len(energy) - 1):
+        assert (
+            energy[i + 1]["timestamp"] - energy[i]["timestamp"]
+            == timedelta(
+                minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+            ).total_seconds()
         )
     assert sum([x["value"] for x in energy]) == pytest.approx(60)
 
@@ -107,9 +113,12 @@ def test_get_energy_for_measurements_watts():
         ),
     ]
     energy = DeviceStateService.get_energy_for_measurements(device, measurements)
-    assert len(energy) == 15 / DeviceStateService.SAMPLE_FREQUENCY_MINUTES + 1
-    for i in range(len(energy) - 2):
-        assert energy[i + 1]["timestamp"] - energy[i]["timestamp"] == timedelta(
-            minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+    assert len(energy) == 15 / DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+    for i in range(len(energy) - 1):
+        assert (
+            energy[i + 1]["timestamp"] - energy[i]["timestamp"]
+            == timedelta(
+                minutes=DeviceStateService.SAMPLE_FREQUENCY_MINUTES
+            ).total_seconds()
         )
     assert sum([x["value"] for x in energy]) == pytest.approx(23.5)
