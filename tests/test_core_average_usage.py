@@ -1,4 +1,4 @@
-"""Unit tests for the MeasurementCore."""
+"""Unit tests for the AaverageUsageCore."""
 
 from datetime import datetime, timedelta, timezone
 

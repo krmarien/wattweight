@@ -146,7 +146,7 @@ def test_list_measurements_empty(
 
 @patch("wattweight.cli.measurement.DeviceCore")
 @patch("wattweight.cli.measurement.MeasurementCore")
-def test_list_measurements(
+def test_list_measurements_table(
     mock_measurement_core,
     mock_device_core,
     measurement_command: MeasurementCommand,
@@ -164,6 +164,32 @@ def test_list_measurements(
     ]
     args = argparse.Namespace(
         measurement_action="list", device_identifier="test", json=False
+    )
+    with patch("builtins.print"):
+        result = measurement_command.execute(args)
+    assert result == 0
+
+
+@patch("wattweight.cli.measurement.DeviceCore")
+@patch("wattweight.cli.measurement.MeasurementCore")
+def test_list_measurements_json(
+    mock_measurement_core,
+    mock_device_core,
+    measurement_command: MeasurementCommand,
+):
+    """Test listing measurements."""
+    mock_device_core.return_value.get_device_by_identifier.return_value = MagicMock(
+        id=1
+    )
+    mock_measurement = MagicMock()
+    mock_measurement.id = 1
+    mock_measurement.timestamp = datetime.now(timezone.utc)
+    mock_measurement.value = 100.0
+    mock_measurement_core.return_value.get_measurements.return_value = [
+        mock_measurement
+    ]
+    args = argparse.Namespace(
+        measurement_action="list", device_identifier="test", json=True
     )
     with patch("builtins.print"):
         result = measurement_command.execute(args)

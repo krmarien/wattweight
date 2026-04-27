@@ -107,7 +107,7 @@ class AverageUsageCommand(BaseCommand):
                 json_data = [
                     {
                         "id": average_usage.id,
-                        "timestamp": average_usage.timestamp.isoformat(),
+                        "minutes": average_usage.timestamp / 60,
                         "value": average_usage.value,
                     }
                     for average_usage in average_usages
@@ -119,7 +119,7 @@ class AverageUsageCommand(BaseCommand):
                 table_data = [
                     [
                         average_usage.id,
-                        average_usage.timestamp.timestamp() / 60,
+                        average_usage.timestamp / 60,
                         average_usage.value,
                     ]
                     for average_usage in average_usages
