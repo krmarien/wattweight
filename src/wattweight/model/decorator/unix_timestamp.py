@@ -16,7 +16,7 @@ class UnixTimestamp(TypeDecorator[datetime]):
             return value
 
         # If filtering with an int directly, just return it
-        if isinstance(value, int):
+        if isinstance(value, int):  # pragma: no cover
             return value
 
         # If it's a datetime object, convert it to an int

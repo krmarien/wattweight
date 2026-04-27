@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Sequence
 
-from sqlmodel import select
+from sqlmodel import asc, select
 
 from wattweight.core.base import Core
 from wattweight.core.device_state import DeviceStateService
@@ -38,6 +38,8 @@ class MeasurementCore(Core):
     def get_measurements(self, device: Device) -> Sequence[Measurement]:
         """Get all measurements for a device by its identifier."""
         measurements = self.db.exec(
-            select(Measurement).where(Measurement.device_id == device.id)
+            select(Measurement)
+            .where(Measurement.device_id == device.id)
+            .order_by(asc(Measurement.timestamp))
         ).all()
         return measurements

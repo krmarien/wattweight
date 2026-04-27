@@ -137,7 +137,7 @@ def test_delete_device_with_measurements():
     measurement_core.add_measurement(
         value=100.0,
         device=device,
-        timestamp=datetime.now(timezone.utc) - timedelta(minutes=5),
+        timestamp=datetime.now(timezone.utc) - timedelta(minutes=10),
     )
     measurement_core.add_measurement(
         value=150.0,

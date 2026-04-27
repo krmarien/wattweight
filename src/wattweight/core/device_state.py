@@ -47,6 +47,8 @@ class DeviceStateService:
             )
             return
 
+        logger.debug(f"Device {device.identifier} is idle, performing state update.")
+
         # Update device average energy
         DeviceStateService.update_average_energy(device)
 
@@ -86,7 +88,7 @@ class DeviceStateService:
         if len(idle_measurements) == 1:
             logger.debug(
                 f"Device {device.identifier} has only one measurement in the last"
-                f"{device.idle_timeout} seconds, treating as not idle."
+                f" {device.idle_timeout} seconds, treating as not idle."
             )
             return False
         elif len(idle_measurements) > 1:
@@ -95,13 +97,13 @@ class DeviceStateService:
             ]
             logger.debug(
                 f"Device {device.identifier} has {len(above_threshold)} measurements"
-                f"above the idle threshold in the last {device.idle_timeout} seconds."
+                f" above the idle threshold in the last {device.idle_timeout} seconds."
             )
             return len(above_threshold) == 0
         else:  # pragma: no cover
             logger.debug(
                 f"No measurements found for device {device.identifier} in the last"
-                f"{device.idle_timeout} seconds."
+                f" {device.idle_timeout} seconds."
             )
             return True
 

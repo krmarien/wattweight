@@ -6,7 +6,6 @@ from types import TracebackType
 from typing import Optional, Type
 
 from sqlalchemy import Engine
-from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlmodel import Session, SQLModel, create_engine
 
 from wattweight.logger import Logger
@@ -16,7 +15,7 @@ class Database:
     """Database manager for wattweight."""
 
     _instance: Optional["Database"] = None
-    _session_factory: Optional[scoped_session[Session]] = None
+    _session: Optional[Session] = None
     _engine: Optional[Engine] = None
 
     def __new__(cls, *args: object, **kwargs: object) -> "Database":
@@ -89,20 +88,17 @@ class Database:
         Returns:
             A shared database session for the current thread.
         """
-        if self._session_factory is None:
-            self._session_factory = scoped_session(
-                sessionmaker(class_=Session, bind=self.engine)
-            )
-        session = self._session_factory()
-        self._logger.debug(f"Getting database session {session}")
-        return session
+        if self._session is None:
+            self._session = Session(self.engine)
+            self._logger.debug(f"Created new database session {self._session}")
+        return self._session
 
     def close(self) -> None:
         """Close the database connection."""
-        if self._session_factory is not None:
+        if self._session is not None:
             self._logger.debug("Removing scoped session")
-            self._session_factory.remove()
-            self._session_factory = None
+            self._session.close()
+            self._session = None
 
         if self._engine is not None:
             self._logger.debug("Closing database connection")
@@ -115,6 +111,11 @@ class Database:
         self.init_db()
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException], traceback: Optional[TracebackType]) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         """Context manager exit."""
         self.close()
