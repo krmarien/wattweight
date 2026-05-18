@@ -122,3 +122,5 @@ def test_get_energy_for_measurements_watts():
             ).total_seconds()
         )
     assert sum([x["value"] for x in energy]) == pytest.approx(23.5)
+
+    # TODO: Add test for average energy calculation
